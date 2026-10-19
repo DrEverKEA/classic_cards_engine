@@ -1,0 +1,40 @@
+name: Update README with New Features
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 
+
+      - name: Extract Feature Commits and Update README
+        run: |
+          # Get the latest commit message
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+          
+          # Check if the commit message starts with "FEAT:"
+          if [[ "$COMMIT_MSG" == FEAT:* ]]; then
+            # Remove the "FEAT: " prefix for cleaner text
+            FEATURE_TEXT=${COMMIT_MSG#FEAT: }
+            DATE=$(date +'%Y-%m-%d')
+            
+            # Append to README
+            echo "- **[$DATE]** $FEATURE_TEXT" >> README.md
+            
+            # Commit and push the updated README
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git add README.md
+            git commit -m "docs: Auto-update README with new feature"
+            git push
+          else
+            echo "No new features to append."
+          fi
