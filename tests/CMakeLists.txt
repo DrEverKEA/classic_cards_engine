@@ -13,7 +13,9 @@ FetchContent_MakeAvailable(googletest)
 add_executable(engine_tests
 	test_sanity.cpp
 	test_card.cpp
+	test_deck.cpp
 	../src/core/Card.cpp
+	../src/core/Deck.cpp
 )
 
 # Tell the test executable where to find the header files

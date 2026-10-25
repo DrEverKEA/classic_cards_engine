@@ -2,7 +2,7 @@
 
 namespace core
 {
-    // Utilizes a member initialization list to directly construct variables,
+    // Utilizing a member initialization list to directly construct variables,
     // avoiding the performance overhead of default-construction followed by reassignment.
     Card::Card(Rank rank, Suit suit, bool isFaceUp)
         : rank_(rank), suit_(suit), isFaceUp_(isFaceUp)
