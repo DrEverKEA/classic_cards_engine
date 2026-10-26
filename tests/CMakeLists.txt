@@ -14,8 +14,10 @@ add_executable(engine_tests
 	test_sanity.cpp
 	test_card.cpp
 	test_deck.cpp
+	test_pile.cpp
 	../src/core/Card.cpp
 	../src/core/Deck.cpp
+	../src/core/Pile.cpp
 )
 
 # Tell the test executable where to find the header files

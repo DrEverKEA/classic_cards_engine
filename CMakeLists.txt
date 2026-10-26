@@ -33,3 +33,19 @@ target_include_directories(${PROJECT_NAME} PRIVATE src)
 # Enable CTest and include the tests directory
 enable_testing()
 add_subdirectory(tests)
+
+# ==========================================
+# Documentation Target (Doxygen)
+# ==========================================
+find_package(Doxygen)
+if (DOXYGEN_FOUND)
+    # Creates a custom 'doc' target that runs Doxygen using the existing Doxyfile
+    add_custom_target(doc
+        COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM
+    )
+else ()
+    message(WARNING "Doxygen is not installed. Documentation cannot be generated.")
+endif ()

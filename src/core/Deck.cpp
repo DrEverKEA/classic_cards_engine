@@ -1,3 +1,11 @@
+/**
+ * @file Deck.cpp
+ * @brief Implementation of Deck generation, URBG shuffling, and LIFO deal mechanics.
+ * 
+ * @copyright Copyright (c) 2026. All rights reserved.
+ *            This project is released under the MIT License.
+ */
+
 #include "core/Deck.h"
 #include <algorithm>
 #include <random>

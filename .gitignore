@@ -3,3 +3,6 @@ build/
 *.out
 .vscode/
 
+# Doxygen generated documentation
+html/
+latex/

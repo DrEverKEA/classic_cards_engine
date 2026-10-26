@@ -1,3 +1,11 @@
+/**
+ * @file Deck.h
+ * @brief Defines the Deck class serving as a factory and stateful container for Cards.
+ * 
+ * @copyright Copyright (c) 2026. All rights reserved.
+ *            This project is released under the MIT License.
+ */
+
 #pragma once
 
 #include <vector>

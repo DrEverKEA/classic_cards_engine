@@ -1,3 +1,11 @@
+/**
+ * @file Card.h
+ * @brief Defines the core Card domain entity with strict type safety.
+ * 
+ * @copyright Copyright (c) 2026. All rights reserved.
+ *            This project is released under the MIT License.
+ */
+
 #pragma once
 
 // Maps to the MVC 'core' directory. Isolates domain entities to prevent

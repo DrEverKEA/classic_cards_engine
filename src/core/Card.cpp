@@ -1,3 +1,11 @@
+/**
+ * @file Card.cpp
+ * @brief Implementation of the Card domain entity's state and accessors.
+ * 
+ * @copyright Copyright (c) 2026. All rights reserved.
+ *            This project is released under the MIT License.
+ */
+
 #include "core/Card.h"
 
 namespace core
