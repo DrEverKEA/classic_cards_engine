@@ -16,10 +16,12 @@ add_executable(engine_tests
 	test_deck.cpp
 	test_pile.cpp
 	test_board.cpp
+	test_rules.cpp
 	../src/core/Card.cpp
 	../src/core/Deck.cpp
 	../src/core/Pile.cpp
 	../src/core/KlondikeBoard.cpp
+	../src/core/KlondikeRules.cpp
 )
 
 # Tell the test executable where to find the header files
