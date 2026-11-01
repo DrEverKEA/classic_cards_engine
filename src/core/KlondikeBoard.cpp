@@ -57,4 +57,25 @@ namespace core
     {
         return tableaus_;
     }
+
+    // Mutable accessors for the Controller to execute moves
+    Deck &KlondikeBoard::getStock()
+    {
+        return stock_;
+    }
+
+    Pile &KlondikeBoard::getWaste()
+    {
+        return waste_;
+    }
+
+    std::array<Pile, 4> &KlondikeBoard::getFoundations()
+    {
+        return foundations_;
+    }
+
+    std::array<Pile, 7> &KlondikeBoard::getTableaus()
+    {
+        return tableaus_;
+    }
 } // namespace core

@@ -32,6 +32,12 @@ namespace core
         const std::array<Pile, 4> &getFoundations() const;
         const std::array<Pile, 7> &getTableaus() const;
 
+        // Mutable accessors for the Controller to execute moves
+        Deck &getStock();
+        Pile &getWaste();
+        std::array<Pile, 4> &getFoundations();
+        std::array<Pile, 7> &getTableaus();
+
     private:
         Deck stock_;
         Pile waste_;
