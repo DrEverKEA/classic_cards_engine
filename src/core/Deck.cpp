@@ -78,4 +78,8 @@ namespace core
         // just checks if the begin() and end() pointers are at the same memory address.
         return cards_.empty();
     }
+
+    void Deck::addCard(const Card &card){
+        cards_.push_back(card);
+    }
 } // namespace core

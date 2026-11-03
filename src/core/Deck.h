@@ -1,7 +1,7 @@
 /**
  * @file Deck.h
  * @brief Defines the Deck class serving as a factory and stateful container for Cards.
- * 
+ *
  * @copyright Copyright (c) 2026. All rights reserved.
  *            This project is released under the MIT License.
  */
@@ -32,6 +32,10 @@ namespace core
         // Read-only accessors for deck state validation during deal mechanics.
         int remainingCards() const;
         bool isEmpty() const;
+
+        // Adds a card back to the deck (used for recycling the waste pile).
+        // card - The read-only card being returned.
+        void addCard(const Card &card);
 
     private:
         // std::vector provides contiguous memory allocation, allowing highly cache-efficient
