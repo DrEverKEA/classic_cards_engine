@@ -10,6 +10,7 @@
 
 #include "core/KlondikeBoard.h"
 #include "core/KlondikeRules.h"
+#include <cstddef> // Adds size_t
 
 namespace core
 {

@@ -10,6 +10,7 @@
 
 #include <vector>
 #include "core/Card.h"
+#include <cstddef> // Adds size_t
 
 namespace core
 {
