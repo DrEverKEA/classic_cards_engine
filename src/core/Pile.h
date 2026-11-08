@@ -72,6 +72,12 @@ namespace core
          */
         bool isEmpty() const;
 
+        /**
+         * @brief Exposes a read-only view of all cards in the pile.
+         * @return Const reference to the internal container of cards.
+         */
+        const std::vector<Card> &getCards() const;
+
     private:
         std::vector<Card> cards_;
     };

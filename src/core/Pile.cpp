@@ -75,4 +75,9 @@ namespace core
     {
         return cards_.empty();
     }
+
+    const std::vector<Card> &Pile::getCards() const
+    {
+        return cards_;
+    }
 }
