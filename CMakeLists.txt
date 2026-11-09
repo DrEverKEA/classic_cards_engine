@@ -36,8 +36,12 @@ add_executable(klondike_cli
 	src/core/KlondikeController.cpp
 )
 
-# Enforce strict code quality standards
-target_compile_options(klondike_cli PRIVATE -Wall -Wextra -Wpedantic -Werror)
+# Enforce strict code quality standards across GCC/Clang (Ubuntu/MacOS) and MSVC (Windows)
+if(MSVC)
+	target_compile_options(klondike_cli PRIVATE /W4 /WX)
+else()
+	target_compile_options(klondike_cli PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
 
 # Optional: Ensure it compiles with modern C++ standards
 target_compile_features(klondike_cli PRIVATE cxx_std_14)
