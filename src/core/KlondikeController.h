@@ -54,6 +54,9 @@ namespace core
         // @return Const reference to the KlondikeBoard.
         const KlondikeBoard &getBoard() const;
 
+        bool isGameWon() const;
+        void startNewGame();
+
     private:
         // The controller owns and manipulates the physical board
         KlondikeBoard board_;

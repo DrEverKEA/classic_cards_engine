@@ -7,12 +7,12 @@
  */
 
 #include "core/KlondikeController.h"
-#include <array>                 // for array
-#include <vector>                // for vector
-#include "core/Card.h"           // for Card
-#include "core/Deck.h"           // for Deck
-#include "core/KlondikeRules.h"  // for KlondikeRules
-#include "core/Pile.h"           // for Pile
+#include <array>                // for array
+#include <vector>               // for vector
+#include "core/Card.h"          // for Card
+#include "core/Deck.h"          // for Deck
+#include "core/KlondikeRules.h" // for KlondikeRules
+#include "core/Pile.h"          // for Pile
 
 namespace core
 {
@@ -139,6 +139,27 @@ namespace core
             sourceTableau.addCards(movingStack);
             return false;
         }
+    }
+
+    bool KlondikeController::isGameWon() const
+    {
+        for (int i = 0; i < 4; ++i)
+        {
+            // If even one foundation is missing cards, the game is not won
+            if (board_.getFoundations()[i].size() != 13)
+            {
+                return false;
+            }
+        }
+        // If we checked all 4 and none returned false, we won!
+        return true;
+    }
+
+    void KlondikeController::startNewGame()
+    {
+        // Creates a brand new board (which automatically creates a new Deck, 
+    // shuffles it, and deals the initial tableaus) and overwrites the old one.
+    board_ = KlondikeBoard();
     }
 
     const KlondikeBoard &KlondikeController::getBoard() const

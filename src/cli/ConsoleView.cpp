@@ -7,15 +7,15 @@
  */
 
 #include "ConsoleView.h"
-#include <stddef.h>              // for size_t
-#include <array>                 // for array
-#include <iostream>              // for basic_ostream, operator<<, basic_ist...
-#include <sstream>               // for basic_stringstream
-#include <vector>                // for vector
-#include "core/Card.h"           // for Card, Rank, Suit
-#include "core/Deck.h"           // for Deck
-#include "core/KlondikeBoard.h"  // for KlondikeBoard
-#include "core/Pile.h"           // for Pile
+#include <stddef.h>             // for size_t
+#include <array>                // for array
+#include <iostream>             // for basic_ostream, operator<<, basic_ist...
+#include <sstream>              // for basic_stringstream
+#include <vector>               // for vector
+#include "core/Card.h"          // for Card, Rank, Suit
+#include "core/Deck.h"          // for Deck
+#include "core/KlondikeBoard.h" // for KlondikeBoard
+#include "core/Pile.h"          // for Pile
 
 namespace cli
 {
@@ -200,6 +200,28 @@ namespace cli
         while (true)
         {
             renderBoard();
+
+            // Check for win immediately after rendering the board
+            if (controller_.isGameWon())
+            {
+                std::cout << "\n\033[32mCongratulations mate! You finished the game!\033[0m\n";
+                std::cout << "Wanna play another one? (y/n): ";
+
+                std::string choice;
+                std::getline(std::cin, choice);
+
+                if (choice == "y" || choice == "Y")
+                {
+                    controller_.startNewGame(); // Resets the deck, shuffles, and redeals
+                    continue;                   // Skips the rest of the loop and starts fresh
+                }
+                else
+                {
+                    break; // Exits the game loop
+                }
+            }
+
+            // Only print the menu and ask for a command if the game is NOT won
             printMenu();
             std::cout << "\n> ";
             std::getline(std::cin, command);
@@ -209,6 +231,7 @@ namespace cli
                 std::cout << "Thanks for playing!\n";
                 break;
             }
+
             processCommand(command);
         }
     }

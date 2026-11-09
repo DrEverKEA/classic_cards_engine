@@ -6,14 +6,13 @@
  *            This project is released under the MIT License.
  */
 
-#include <gtest/gtest.h>              // for Test, EXPECT_TRUE, TestInfo (pt...
 #include <string>                     // for basic_string
 #include "core/Card.h"                // for Card
 #include "core/Deck.h"                // for Deck
 #include "core/KlondikeBoard.h"       // for KlondikeBoard
 #include "core/KlondikeController.h"  // for KlondikeController
 #include "core/Pile.h"                // for Pile
-#include "gtest/gtest.h"              // for AssertionResult, Message, TestP...
+#include "gtest/gtest.h"              // for AssertionResult, Message, Test
 
 
 using namespace core;
