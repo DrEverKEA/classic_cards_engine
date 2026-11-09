@@ -13,6 +13,10 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+    
+    - name: Install IWYU (Ubuntu)
+      if: runner.os == 'Linux'
+      run: sudo apt-get update && sudo apt-get install -y iwyu
 
     - name: Configure CMake
       run: cmake -B build
