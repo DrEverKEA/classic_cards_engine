@@ -139,6 +139,7 @@ namespace cli
                   << "  w f <F>  --------- Move Waste to Foundation (e.g, w f 0)\n"
                   << "  t f <T> <F>  ----- Move Tableau to Foundation (e.g., t f 0 1)\n"
                   << "  t t <S> <D> <N>  - Move <N> cards from Tableau <S> to <D> (e.g., t t 0 1 3)\n"
+                  << "  r  --------------- Restart with a new game\n"
                   << "  q  --------------- Quit\n";
     }
 
@@ -230,6 +231,12 @@ namespace cli
             {
                 std::cout << "Thanks for playing!\n";
                 break;
+            }
+
+            if (command == "r" || command == "restart")
+            {
+                controller_.startNewGame();
+                continue; // Instantly loops back to the top to render the new board
             }
 
             processCommand(command);
