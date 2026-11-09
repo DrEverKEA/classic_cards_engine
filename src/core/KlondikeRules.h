@@ -8,8 +8,14 @@
 
 #pragma once
 
-#include "core/Card.h"
-#include "core/Pile.h"
+namespace core
+{
+    class Card;
+}
+namespace core
+{
+    class Pile;
+}
 
 namespace core
 {

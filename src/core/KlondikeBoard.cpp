@@ -7,6 +7,8 @@
  */
 
 #include "core/KlondikeBoard.h"
+#include <stddef.h>    // for size_t
+#include "core/Card.h" //for Card
 
 namespace core
 {

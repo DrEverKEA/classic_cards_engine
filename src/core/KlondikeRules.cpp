@@ -7,6 +7,8 @@
  */
 
 #include "core/KlondikeRules.h"
+#include "core/Card.h" // for Card, Rank, Suit
+#include "core/Pile.h" // for Pile
 
 namespace core
 {

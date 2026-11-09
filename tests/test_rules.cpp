@@ -6,10 +6,12 @@
  *            This project is released under the MIT License.
  */
 
-#include <gtest/gtest.h>
-#include "core/KlondikeRules.h"
-#include "core/Card.h"
-#include "core/Pile.h"
+#include <string>                // for basic_string
+#include "core/Card.h"           // for Card, Rank, Suit
+#include "core/KlondikeRules.h"  // for KlondikeRules
+#include "core/Pile.h"           // for Pile
+#include "gtest/gtest.h"         // for AssertionResult, Message, TestPartRe...
+
 
 using namespace core;
 

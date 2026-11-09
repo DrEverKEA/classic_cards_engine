@@ -55,3 +55,5 @@ The CLI accepts text commands to move cards around the board. Enter a command an
     Memory Safety: Completely avoids raw pointers (new/delete) and manual memory management by leveraging RAII and standard C++ containers (std::vector, std::array).
 
     MVC Pattern: The KlondikeController acts as a strict facade, keeping the ConsoleView completely ignorant of the underlying game mechanics (KlondikeRules, Deck, Pile).
+
+    Strict Header Management: Integrated Include-What-You-Use (IWYU) directly into the CMake build pipeline to guarantee optimal dependency resolution and fast compilation times.

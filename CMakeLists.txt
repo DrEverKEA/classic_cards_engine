@@ -14,6 +14,7 @@ project(classic_cards_engine VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "include-what-you-use")
 
 # Build the main CLI Game Executable
 add_executable(klondike_cli 
@@ -26,6 +27,9 @@ add_executable(klondike_cli
     src/core/KlondikeRules.cpp
     src/core/KlondikeController.cpp
 )
+
+# Enforce strict code quality standards
+target_compile_options(klondike_cli PRIVATE -Wall -Wextra -Wpedantic -Werror)
 
 # Optional: Ensure it compiles with modern C++ standards
 target_compile_features(klondike_cli PRIVATE cxx_std_14)

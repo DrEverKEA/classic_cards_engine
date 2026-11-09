@@ -8,9 +8,12 @@
 
 #pragma once
 
-#include "core/KlondikeController.h"
-#include "core/Card.h"
 #include <string>
+#include "core/KlondikeController.h"
+namespace core
+{
+    class Card;
+}
 
 namespace cli
 {

@@ -7,9 +7,15 @@
  */
 
 #include "ConsoleView.h"
-#include <iostream>
-#include <sstream>
-#include <vector>
+#include <stddef.h>              // for size_t
+#include <array>                 // for array
+#include <iostream>              // for basic_ostream, operator<<, basic_ist...
+#include <sstream>               // for basic_stringstream
+#include <vector>                // for vector
+#include "core/Card.h"           // for Card, Rank, Suit
+#include "core/Deck.h"           // for Deck
+#include "core/KlondikeBoard.h"  // for KlondikeBoard
+#include "core/Pile.h"           // for Pile
 
 namespace cli
 {
