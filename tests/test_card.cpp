@@ -1,5 +1,6 @@
-#include <gtest/gtest.h>
-#include "core/Card.h"
+#include <string>         // for basic_string
+#include "core/Card.h"    // for Card, Rank, Suit
+#include "gtest/gtest.h"  // for AssertionResult, Message, TestPartResult
 
 using namespace core;
 

@@ -6,8 +6,14 @@
  *            This project is released under the MIT License.
  */
 
-#include <gtest/gtest.h>
-#include "core/KlondikeBoard.h"
+#include <stddef.h>                        // for size_t
+#include <array>                           // for array
+#include <string>                          // for basic_string
+#include "core/Card.h"                     // for Card
+#include "core/Deck.h"                     // for Deck
+#include "core/Pile.h"                     // for Pile
+#include "games/klondike/KlondikeBoard.h"  // for KlondikeBoard
+#include "gtest/gtest.h"                   // for AssertionResult, Message
 
 using namespace core;
 

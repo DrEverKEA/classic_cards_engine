@@ -1,6 +1,9 @@
-#include <gtest/gtest.h>
-#include <stdexcept>
-#include "core/Deck.h"
+#include <stdexcept>      // for out_of_range
+#include <string>         // for basic_string
+#include "core/Card.h"    // for Card
+#include "core/Deck.h"    // for Deck
+#include "gtest/gtest.h"  // for AssertionResult, Message, TestPartResult
+
 
 using namespace core;
 

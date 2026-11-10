@@ -9,7 +9,7 @@
 #pragma once
 
 #include <string>
-#include "core/KlondikeController.h"
+#include "games/klondike/KlondikeController.h"
 namespace core
 {
     class Card;

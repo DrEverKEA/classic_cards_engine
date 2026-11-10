@@ -1,4 +1,5 @@
-#include <gtest/gtest.h>
+#include <string>         // for basic_string
+#include "gtest/gtest.h"  // for AssertionResult, Message, TestPartResult
 
 // A simple sanity check to ensure the testing framework compiles and runs
 TEST(SanityCheck, BuildSystemWorks) {

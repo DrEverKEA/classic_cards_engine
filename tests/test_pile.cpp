@@ -1,7 +1,10 @@
-#include <gtest/gtest.h>
-#include <stdexcept>
-#include <vector>
-#include "core/Pile.h"
+#include <stdexcept>      // for out_of_range
+#include <string>         // for basic_string
+#include <vector>         // for vector
+#include "core/Card.h"    // for Card, Rank, Suit
+#include "core/Pile.h"    // for Pile
+#include "gtest/gtest.h"  // for Message, AssertionResult, TestPartResult
+
 
 using namespace core;
 

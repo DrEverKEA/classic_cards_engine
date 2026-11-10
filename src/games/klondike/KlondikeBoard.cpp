@@ -6,7 +6,7 @@
  *            This project is released under the MIT License.
  */
 
-#include "core/KlondikeBoard.h"
+#include "games/klondike/KlondikeBoard.h"
 #include <stddef.h>    // for size_t
 #include "core/Card.h" //for Card
 

@@ -6,8 +6,8 @@
  *            This project is released under the MIT License.
  */
 
-#include "core/KlondikeController.h"
-#include "ConsoleView.h"
+#include "games/klondike/KlondikeController.h"
+#include "cli/ConsoleView.h"
 
 int main()
 {

@@ -6,13 +6,13 @@
  *            This project is released under the MIT License.
  */
 
-#include "core/KlondikeController.h"
-#include <array>                // for array
-#include <vector>               // for vector
-#include "core/Card.h"          // for Card
-#include "core/Deck.h"          // for Deck
-#include "core/KlondikeRules.h" // for KlondikeRules
-#include "core/Pile.h"          // for Pile
+#include "games/klondike/KlondikeController.h"
+#include <array>                          // for array
+#include <vector>                         // for vector
+#include "core/Card.h"                    // for Card
+#include "core/Deck.h"                    // for Deck
+#include "games/klondike/KlondikeRules.h" // for KlondikeRules
+#include "core/Pile.h"                    // for Pile
 
 namespace core
 {
@@ -157,9 +157,9 @@ namespace core
 
     void KlondikeController::startNewGame()
     {
-        // Creates a brand new board (which automatically creates a new Deck, 
-    // shuffles it, and deals the initial tableaus) and overwrites the old one.
-    board_ = KlondikeBoard();
+        // Creates a brand new board (which automatically creates a new Deck,
+        // shuffles it, and deals the initial tableaus) and overwrites the old one.
+        board_ = KlondikeBoard();
     }
 
     const KlondikeBoard &KlondikeController::getBoard() const

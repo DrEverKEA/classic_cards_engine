@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <cstddef>               // for size_t
-#include "core/KlondikeBoard.h"  // for KlondikeBoard
+#include <cstddef>                        // for size_t
+#include "games/klondike/KlondikeBoard.h" // for KlondikeBoard
 
 namespace core
 {

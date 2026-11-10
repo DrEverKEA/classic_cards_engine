@@ -6,7 +6,7 @@
  *            This project is released under the MIT License.
  */
 
-#include "core/KlondikeRules.h"
+#include "games/klondike/KlondikeRules.h"
 #include "core/Card.h" // for Card, Rank, Suit
 #include "core/Pile.h" // for Pile
 

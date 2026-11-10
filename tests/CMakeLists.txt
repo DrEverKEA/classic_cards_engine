@@ -18,19 +18,13 @@ add_executable(engine_tests
 	test_board.cpp
 	test_rules.cpp
 	test_controller.cpp
-	../src/core/Card.cpp
-	../src/core/Deck.cpp
-	../src/core/Pile.cpp
-	../src/core/KlondikeBoard.cpp
-	../src/core/KlondikeRules.cpp
-	../src/core/KlondikeController.cpp
 )
 
 # Tell the test executable where to find the header files
 target_include_directories(engine_tests PRIVATE ../src)
 
 # Link GoogleTest to our test executable
-target_link_libraries(engine_tests GTest::gtest_main)
+target_link_libraries(engine_tests PRIVATE klondike_game gtest_main)
 
 # Register tests with CTest (CMake's test runner)
 include(GoogleTest)
