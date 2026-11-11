@@ -7,7 +7,7 @@
  */
 
 #include "ConsoleView.h"
-#include <stddef.h>                       // for size_t
+#include <stddef.h>                       // for int
 #include <array>                          // for array
 #include <iostream>                       // for basic_ostream, operator<<, basic_ist...
 #include <sstream>                        // for basic_stringstream
@@ -161,7 +161,7 @@ namespace cli
         else if (action == "w")
         {
             std::string destType;
-            size_t dest;
+            int dest;
             if (ss >> destType >> dest)
             {
                 if (destType == "t")
@@ -177,13 +177,13 @@ namespace cli
             {
                 if (destType == "f")
                 {
-                    size_t src, dest;
+                    int src, dest;
                     if (ss >> src >> dest)
                         success = controller_.attemptMove(core::GameMove(core::PileGroup::Tableau, src, core::PileGroup::Foundation, dest));
                 }
                 else if (destType == "t")
                 {
-                    size_t src, dest, count;
+                    int src, dest, count;
                     if (ss >> src >> dest >> count)
                         success = controller_.attemptMove(core::GameMove(core::PileGroup::Tableau, src, core::PileGroup::Tableau, dest, count));
                 }
