@@ -13,17 +13,40 @@
 #include "core/Deck.h"                    // for Deck
 #include "games/klondike/KlondikeRules.h" // for KlondikeRules
 #include "core/Pile.h"                    // for Pile
+#include <stdexcept>
 
 namespace core
 {
+    void KlondikeController::startGame()
+    {
+        board_ = KlondikeBoard(); // Trashes the old board and builds a fresh one
+    }
+
+    void KlondikeController::resetGame()
+    {
+        board_ = KlondikeBoard();
+    }
+
+    bool KlondikeController::isGameWon() const
+    {
+        for (int i = 0; i < 4; ++i)
+        {
+            if (board_.getFoundations()[i].size() != 13)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     bool KlondikeController::draw()
     {
-        Deck &stock = board_.getStock();
+        Pile &stock = board_.getStock();
         Pile &waste = board_.getWaste();
 
         if (!stock.isEmpty())
         {
-            Card drawn = stock.dealCard();
+            Card drawn = stock.removeCard();
             drawn.flip(); // Face up in the waste pile
             waste.addCard(drawn);
             return true;
@@ -43,127 +66,150 @@ namespace core
         return false; // Both are empty
     }
 
-    bool KlondikeController::moveWasteToTableau(size_t tableauIndex)
+    bool KlondikeController::hasPileGroup(PileGroup group) const
     {
-        if (tableauIndex >= 7 || board_.getWaste().isEmpty())
-            return false;
-
-        Pile &waste = board_.getWaste();
-        Pile &tableau = board_.getTableaus()[tableauIndex];
-        const Card &cardToMove = waste.getTopCard();
-
-        if (KlondikeRules::canMoveToTableau(cardToMove, tableau))
-        {
-            tableau.addCard(waste.removeCard());
-            return true;
-        }
-        return false;
+        return group == PileGroup::Tableau ||
+               group == PileGroup::Foundation ||
+               group == PileGroup::Stock ||
+               group == PileGroup::Waste;
     }
 
-    bool KlondikeController::moveWasteToFoundation(size_t foundationIndex)
+    int KlondikeController::getPileCount(PileGroup group) const
     {
-        if (foundationIndex >= 4 || board_.getWaste().isEmpty())
-            return false;
-
-        Pile &waste = board_.getWaste();
-        Pile &foundation = board_.getFoundations()[foundationIndex];
-        const Card &cardToMove = waste.getTopCard();
-
-        if (KlondikeRules::canMoveToFoundation(cardToMove, foundation))
+        switch (group)
         {
-            foundation.addCard(waste.removeCard());
-            return true;
-        }
-        return false;
-    }
-
-    bool KlondikeController::moveTableauToFoundation(size_t tableauIndex, size_t foundationIndex)
-    {
-        if (tableauIndex >= 7 || foundationIndex >= 4)
-            return false;
-
-        Pile &tableau = board_.getTableaus()[tableauIndex];
-        if (tableau.isEmpty())
-            return false;
-
-        Pile &foundation = board_.getFoundations()[foundationIndex];
-        const Card &cardToMove = tableau.getTopCard();
-
-        if (KlondikeRules::canMoveToFoundation(cardToMove, foundation))
-        {
-            foundation.addCard(tableau.removeCard());
-
-            // Auto-flip the newly exposed top card of the tableau
-            if (!tableau.isEmpty() && !tableau.getTopCard().isFaceUp())
-            {
-                Card flipped = tableau.removeCard();
-                flipped.flip();
-                tableau.addCard(flipped);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    bool KlondikeController::moveTableauToTableau(size_t sourceIndex, size_t destIndex, size_t count)
-    {
-        if (sourceIndex >= 7 || destIndex >= 7 || sourceIndex == destIndex || count == 0)
-            return false;
-
-        Pile &sourceTableau = board_.getTableaus()[sourceIndex];
-        Pile &destTableau = board_.getTableaus()[destIndex];
-
-        if (static_cast<size_t>(sourceTableau.size()) < count)
-            return false;
-
-        // Temporarily remove the stack to examine its bottom card safely
-        std::vector<Card> movingStack = sourceTableau.removeCards(count);
-        const Card &bottomOfStack = movingStack.front(); // The connection point
-
-        if (KlondikeRules::canMoveToTableau(bottomOfStack, destTableau))
-        {
-            destTableau.addCards(movingStack);
-
-            // Auto-flip the newly exposed top card of the source tableau
-            if (!sourceTableau.isEmpty() && !sourceTableau.getTopCard().isFaceUp())
-            {
-                Card flipped = sourceTableau.removeCard();
-                flipped.flip();
-                sourceTableau.addCard(flipped);
-            }
-            return true;
-        }
-        else
-        {
-            // Move was illegal, revert the physical removal
-            sourceTableau.addCards(movingStack);
-            return false;
+        case PileGroup::Tableau:
+            return 7;
+        case PileGroup::Foundation:
+            return 4;
+        case PileGroup::Stock:
+            return 1;
+        case PileGroup::Waste:
+            return 1;
+        default:
+            return 0;
         }
     }
 
-    bool KlondikeController::isGameWon() const
+    const Pile &KlondikeController::getPile(PileGroup group, int index) const
     {
-        for (int i = 0; i < 4; ++i)
+        switch (group)
         {
-            // If even one foundation is missing cards, the game is not won
-            if (board_.getFoundations()[i].size() != 13)
-            {
+        case PileGroup::Tableau:
+            return board_.getTableaus()[index];
+        case PileGroup::Foundation:
+            return board_.getFoundations()[index];
+        case PileGroup::Stock:
+            return board_.getStock();
+        case PileGroup::Waste:
+            return board_.getWaste();
+        default:
+            throw std::out_of_range("Invalid PileGroup requested!");
+        }
+    }
+
+    bool KlondikeController::attemptMove(const GameMove &move)
+    {
+        // Waste -> Tableau
+        if (move.sourceGroup == PileGroup::Waste && move.destGroup == PileGroup::Tableau)
+        {
+            if (board_.getWaste().isEmpty())
                 return false;
+            if (move.destIndex < 0 || move.destIndex >= 7)
+                return false;
+
+            const Card &topCard = board_.getWaste().getTopCard();
+            if (KlondikeRules::canMoveToTableau(topCard, board_.getTableaus()[move.destIndex]))
+            {
+                board_.getTableaus()[move.destIndex].addCard(board_.getWaste().removeCard());
+                return true;
             }
         }
-        // If we checked all 4 and none returned false, we won!
-        return true;
-    }
 
-    void KlondikeController::startNewGame()
-    {
-        // Creates a brand new board (which automatically creates a new Deck,
-        // shuffles it, and deals the initial tableaus) and overwrites the old one.
-        board_ = KlondikeBoard();
-    }
+        // Waste -> Foundation
+        if (move.sourceGroup == PileGroup::Waste && move.destGroup == PileGroup::Foundation)
+        {
+            if (board_.getWaste().isEmpty())
+                return false;
+            if (move.destIndex < 0 || move.destIndex >= 4)
+                return false;
 
-    const KlondikeBoard &KlondikeController::getBoard() const
-    {
-        return board_;
+            const Card &topCard = board_.getWaste().getTopCard();
+            if (KlondikeRules::canMoveToFoundation(topCard, board_.getFoundations()[move.destIndex]))
+            {
+                board_.getFoundations()[move.destIndex].addCard(board_.getWaste().removeCard());
+                return true;
+            }
+        }
+
+        // Tableau -> Foundation
+        if (move.sourceGroup == PileGroup::Tableau && move.destGroup == PileGroup::Foundation)
+        {
+            if (move.sourceIndex < 0 || move.sourceIndex >= 7)
+                return false;
+            if (move.destIndex < 0 || move.destIndex >= 4)
+                return false;
+
+            Pile &sourcePile = board_.getTableaus()[move.sourceIndex];
+            if (sourcePile.isEmpty())
+                return false;
+
+            const Card &topCard = sourcePile.getTopCard();
+            if (KlondikeRules::canMoveToFoundation(topCard, board_.getFoundations()[move.destIndex]))
+            {
+                board_.getFoundations()[move.destIndex].addCard(sourcePile.removeCard());
+                // Auto-flip newly exposed card
+                if (!sourcePile.isEmpty() && !sourcePile.getTopCard().isFaceUp())
+                {
+                    Card flipped = sourcePile.removeCard();
+                    flipped.flip();
+                    sourcePile.addCard(flipped);
+                }
+                return true;
+            }
+        }
+
+        // Tableau -> Tableau (Multi-card)
+        if (move.sourceGroup == PileGroup::Tableau && move.destGroup == PileGroup::Tableau)
+        {
+            if (move.sourceIndex < 0 || move.sourceIndex >= 7)
+                return false;
+            if (move.destIndex < 0 || move.destIndex >= 7)
+                return false;
+            if (move.sourceIndex == move.destIndex)
+                return false;
+
+            Pile &sourcePile = board_.getTableaus()[move.sourceIndex];
+            Pile &destPile = board_.getTableaus()[move.destIndex];
+
+            if (sourcePile.size() < move.cardCount)
+                return false;
+
+            // Reading is fine because getCards() returns a const reference
+            const Card &baseMovingCard = sourcePile.getCards()[sourcePile.size() - move.cardCount];
+            if (!baseMovingCard.isFaceUp())
+                return false;
+
+            if (KlondikeRules::canMoveToTableau(baseMovingCard, destPile))
+            {
+                std::vector<Card> movingCards = sourcePile.removeCards(move.cardCount);
+
+                for (const Card &c : movingCards)
+                {
+                    destPile.addCard(c);
+                }
+
+                if (!sourcePile.isEmpty() && !sourcePile.getTopCard().isFaceUp())
+                {
+                    Card flipped = sourcePile.removeCard();
+                    flipped.flip();
+                    sourcePile.addCard(flipped);
+                }
+
+                return true;
+            }
+        }
+
+        return false;
     }
 } // namespace core

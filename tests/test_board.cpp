@@ -22,7 +22,7 @@ TEST(KlondikeBoardTest, InitialDealDistributesCardsCorrectly)
     KlondikeBoard board;
 
     // 52 total cards - 28 dealt to tableaus = 24 remaining in stock
-    EXPECT_EQ(board.getStock().remainingCards(), 24);
+    EXPECT_EQ(board.getStock().size(), 24);
 
     // Waste pile starts empty
     EXPECT_TRUE(board.getWaste().isEmpty());

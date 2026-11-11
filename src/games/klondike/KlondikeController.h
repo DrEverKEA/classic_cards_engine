@@ -10,6 +10,7 @@
 
 #include <cstddef>                        // for size_t
 #include "games/klondike/KlondikeBoard.h" // for KlondikeBoard
+#include "../../core/IGameController.h"
 
 namespace core
 {
@@ -18,44 +19,30 @@ namespace core
     // Acts as the Controller in the MVC architecture. It translates external
     // user intents into physical moves on the KlondikeBoard, validating all actions
     // against the KlondikeRules before execution.
-    class KlondikeController
+    class KlondikeController : public core::IGameController
     {
     public:
         KlondikeController() = default;
 
-        // Draws a card from the Stock to the Waste, or recycles the Waste to the Stock.
-        // True if a draw or recycle occurred, false if both are empty.
-        bool draw();
+        // --------------------------------------------------------------------
+        // Lifecycle Management
+        // --------------------------------------------------------------------
+        void startGame() override;       // Shuffles and deals a new game.
+        void resetGame() override;       // Restarts the current game with the exact same initial shuffle.
+        bool isGameWon() const override; // Checks if the victory condition has been met.
 
-        // Attempts to move the top card from the Waste to a specific Tableau.
-        // @param tableauIndex The index (0-6) of the destination tableau.
-        // @return True if the move was legal and executed.
-        bool moveWasteToTableau(size_t tableauIndex);
+        // --------------------------------------------------------------------
+        // Action Routing
+        // --------------------------------------------------------------------
+        bool attemptMove(const GameMove &move) override; // Attempts to execute a move requested by the View.
+        bool draw() override;                            // Specialized action for games with a drawable stock.
 
-        // Attempts to move the top card from the Waste to a specific Foundation.
-        // @param foundationIndex The index (0-3) of the destination foundation.
-        // @return True if the move was legal and executed.
-        bool moveWasteToFoundation(size_t foundationIndex);
-
-        // Attempts to move the top card of a Tableau to a Foundation.
-        // @param tableauIndex The index (0-6) of the source tableau.
-        // @param foundationIndex The index (0-3) of the destination foundation.
-        // @return True if the move was legal and executed.
-        bool moveTableauToFoundation(size_t tableauIndex, size_t foundationIndex);
-
-        // Attempts to move a face-up stack between Tableaus.
-        // @param sourceIndex The index (0-6) of the source tableau.
-        // @param destIndex The index (0-6) of the destination tableau.
-        // @param count The number of face-up cards to move.
-        // @return True if the move was legal and executed.
-        bool moveTableauToTableau(size_t sourceIndex, size_t destIndex, size_t count);
-
-        // Exposes the read-only state of the board so the View can render it.
-        // @return Const reference to the KlondikeBoard.
-        const KlondikeBoard &getBoard() const;
-
-        bool isGameWon() const;
-        void startNewGame();
+        // --------------------------------------------------------------------
+        // State Interrogation (Read-Only)
+        // --------------------------------------------------------------------
+        bool hasPileGroup(PileGroup group) const override;              // Checks if the specific game utilizes a particular pile group.
+        int getPileCount(PileGroup group) const override;               // Retrieves the number of piles within a specific group.
+        const Pile &getPile(PileGroup group, int index) const override; // Fetches a read-only reference to a specific pile for rendering.
 
     private:
         // The controller owns and manipulates the physical board

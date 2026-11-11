@@ -15,22 +15,23 @@ namespace core
 
     KlondikeBoard::KlondikeBoard()
     {
-        // The Deck constructor already created 52 ordered cards.
-        // We must shuffle them to achieve true hardware-seeded entropy before dealing.
-        stock_.suffle();
         initialDeal();
     }
 
     void KlondikeBoard::initialDeal()
     {
+        // Create a fresh hardware-seeded deck locally and shuffle it
+        Deck deck;
+        deck.shuffle();
+
         // Outer loop: Iterate through all 7 tableaus
         for (size_t i = 0; i < tableaus_.size(); ++i)
         {
             // Inner loop: Deal 'i + 1' cards to the current tableau
             for (size_t j = 0; j <= i; ++j)
             {
-                Card dealtCard = stock_.dealCard();
-                // In standard Klondike, only the top (last) card placed on each tableau is face-up.
+                Card dealtCard = deck.dealCard();
+                // Only the top (last) card placed on each tableau is face-up
                 if (j == i)
                 {
                     dealtCard.flip();
@@ -38,9 +39,15 @@ namespace core
                 tableaus_[i].addCard(dealtCard);
             }
         }
+
+        // Dump the remaining 24 cards into the stock pile
+        while(!deck.isEmpty()){
+            stock_.addCard(deck.dealCard());
+        }
+
     }
 
-    const Deck &KlondikeBoard::getStock() const
+    const Pile &KlondikeBoard::getStock() const
     {
         return stock_;
     }
@@ -61,7 +68,7 @@ namespace core
     }
 
     // Mutable accessors for the Controller to execute moves
-    Deck &KlondikeBoard::getStock()
+    Pile &KlondikeBoard::getStock()
     {
         return stock_;
     }

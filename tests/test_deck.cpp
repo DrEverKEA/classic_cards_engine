@@ -28,7 +28,7 @@ TEST(DeckTest, DealCardReducesDeckSize)
 TEST(DeckTest, SuffleMaintainsDeckSize)
 {
     Deck deck;
-    deck.suffle();
+    deck.shuffle();
 
     EXPECT_EQ(deck.remainingCards(), 52);
 }

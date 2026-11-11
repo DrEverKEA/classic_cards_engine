@@ -23,7 +23,7 @@ namespace core
 
         // Randomizes the order of the remaining cards in the container using
         // a standard uniform random bit generator (URBG)
-        void suffle();
+        void shuffle();
 
         // Pops and returns the top card from the deck.
         // Throws std::out_of_range if attempting to deal from an empty deck to prevent Undefined Behavior (UB).

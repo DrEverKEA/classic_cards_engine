@@ -25,7 +25,7 @@ namespace core
         KlondikeBoard();
 
         // Read-only accessors for UI rendering and state validation
-        const Deck &getStock() const;
+        const Pile &getStock() const;
         const Pile &getWaste() const;
 
         // std::array is used here because the exact number of these structures never fluctuates
@@ -33,13 +33,13 @@ namespace core
         const std::array<Pile, 7> &getTableaus() const;
 
         // Mutable accessors for the Controller to execute moves
-        Deck &getStock();
+        Pile &getStock();
         Pile &getWaste();
         std::array<Pile, 4> &getFoundations();
         std::array<Pile, 7> &getTableaus();
 
     private:
-        Deck stock_;
+        Pile stock_;
         Pile waste_;
         std::array<Pile, 4> foundations_;
         std::array<Pile, 7> tableaus_;

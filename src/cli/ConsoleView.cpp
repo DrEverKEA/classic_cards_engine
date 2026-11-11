@@ -74,53 +74,55 @@ namespace cli
 
     void ConsoleView::renderBoard() const
     {
-        const auto &board = controller_.getBoard();
-
         std::cout << "\n========================================\n";
 
-        // Draw Stock and Waste
-        std::cout << "Stock: " << (board.getStock().isEmpty() ? "[   ]" : "[XXX]")
-                  << " (" << board.getStock().remainingCards() << ")   ";
+        // Draw Stock and Waste (Index 0 because there is only one of each)
+        const core::Pile& stock = controller_.getPile(core::PileGroup::Stock, 0);
+        std::cout << "Stock: " << (stock.isEmpty() ? "[   ]" : "[XXX]")
+                  << " (" << stock.size() << ")   ";
 
+        const core::Pile& waste = controller_.getPile(core::PileGroup::Waste, 0);
         std::cout << "Waste: ";
-        if (board.getWaste().isEmpty())
+        if (waste.isEmpty())
         {
             std::cout << "[   ]";
         }
         else
         {
-            std::cout << formatCard(board.getWaste().getTopCard());
+            std::cout << formatCard(waste.getTopCard());
         }
         std::cout << "\n\n";
 
         // Draw Foundations
         std::cout << "Foundations:\n";
-        const auto &foundations = board.getFoundations();
-        for (size_t i = 0; i < foundations.size(); ++i)
+        int foundationCount = controller_.getPileCount(core::PileGroup::Foundation);
+        for (int i = 0; i < foundationCount; ++i)
         {
+            const core::Pile& foundation = controller_.getPile(core::PileGroup::Foundation, i);
             std::cout << "F" << i << ": ";
-            if (foundations[i].isEmpty())
+            if (foundation.isEmpty())
                 std::cout << "[   ]";
             else
-                std::cout << formatCard(foundations[i].getTopCard());
+                std::cout << formatCard(foundation.getTopCard());
             std::cout << "  ";
         }
         std::cout << "\n\n";
 
         // Draw Tableaus (Horizontal layout for CLI simplicity)
         std::cout << "Tableaus:\n";
-        const auto &tableaus = board.getTableaus();
-        for (size_t i = 0; i < tableaus.size(); ++i)
+        int tableauCount = controller_.getPileCount(core::PileGroup::Tableau);
+        for (int i = 0; i < tableauCount; ++i)
         {
+            const core::Pile& tableau = controller_.getPile(core::PileGroup::Tableau, i);
             std::cout << "T" << i << ": ";
-            if (tableaus[i].isEmpty())
+            if (tableau.isEmpty())
             {
                 std::cout << "[   ]";
             }
             else
             {
                 // Read-only copy of the cards to print them in order
-                auto cards = tableaus[i].getCards();
+                auto cards = tableau.getCards();
                 for (const auto &card : cards)
                 {
                     std::cout << formatCard(card) << " ";
@@ -163,9 +165,9 @@ namespace cli
             if (ss >> destType >> dest)
             {
                 if (destType == "t")
-                    success = controller_.moveWasteToTableau(dest);
+                    success = controller_.attemptMove(core::GameMove(core::PileGroup::Waste, 0, core::PileGroup::Tableau, dest));
                 else if (destType == "f")
-                    success = controller_.moveWasteToFoundation(dest);
+                    success = controller_.attemptMove(core::GameMove(core::PileGroup::Waste, 0, core::PileGroup::Foundation, dest));
             }
         }
         else if (action == "t")
@@ -177,13 +179,13 @@ namespace cli
                 {
                     size_t src, dest;
                     if (ss >> src >> dest)
-                        success = controller_.moveTableauToFoundation(src, dest);
+                        success = controller_.attemptMove(core::GameMove(core::PileGroup::Tableau, src, core::PileGroup::Foundation, dest));
                 }
                 else if (destType == "t")
                 {
                     size_t src, dest, count;
                     if (ss >> src >> dest >> count)
-                        success = controller_.moveTableauToTableau(src, dest, count);
+                        success = controller_.attemptMove(core::GameMove(core::PileGroup::Tableau, src, core::PileGroup::Tableau, dest, count));
                 }
             }
         }
@@ -213,7 +215,7 @@ namespace cli
 
                 if (choice == "y" || choice == "Y")
                 {
-                    controller_.startNewGame(); // Resets the deck, shuffles, and redeals
+                    controller_.startGame(); // Resets the deck, shuffles, and redeals
                     continue;                   // Skips the rest of the loop and starts fresh
                 }
                 else
@@ -235,7 +237,7 @@ namespace cli
 
             if (command == "r" || command == "restart")
             {
-                controller_.startNewGame();
+                controller_.startGame();
                 continue; // Instantly loops back to the top to render the new board
             }
 

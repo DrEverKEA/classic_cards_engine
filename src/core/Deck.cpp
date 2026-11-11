@@ -38,7 +38,7 @@ namespace core
         }
     }
 
-    void Deck::suffle()
+    void Deck::shuffle()
     {
         // Seed the Mersenne Twister engine with hardware entropy for uniform distribution.
 
