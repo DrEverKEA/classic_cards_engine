@@ -8,13 +8,17 @@
 
 #pragma once
 
-#include <SDL2/SDL_render.h>  // for SDL_Renderer, SDL_Texture
-#include <SDL2/SDL_video.h>   // for SDL_Window
-
+#include <SDL2/SDL_render.h> // for SDL_Renderer, SDL_Texture
+#include <SDL2/SDL_video.h>  // for SDL_Window
+#include <SDL2/SDL_rect.h>   // for SDL_Rect
+namespace core
+{
+    class Card;
+}
 namespace core
 {
     class IGameController;
-}
+} //
 
 namespace sdl
 {
@@ -55,5 +59,8 @@ namespace sdl
         // Iterates through the board's piles via the controller and renders
         // the appropriate sprites from the texture atlas.
         void render();
+
+        // Calculate the exact 64x64 slice on the sprite sheet for a given card
+        SDL_Rect getCardSpriteRect(const core::Card &card) const;
     };
 } // namespace sdl

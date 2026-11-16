@@ -7,20 +7,19 @@
  */
 
 #include "SDLView.h"
-#include <SDL2/SDL.h>        // for SDL_Quit, SDL_Init, SDL_INIT_VIDEO
-#include <SDL2/SDL_error.h>  // for SDL_GetError
-#include <SDL2/SDL_events.h> // for SDL_PollEvent, SDL_Event, SDL_EventType
-#include <SDL2/SDL_render.h> // for SDL_CreateRenderer, SDL_DestroyRenderer
-#include <SDL2/SDL_video.h>  // for SDL_DestroyWindow, SDL_CreateWindow
-#include <SDL2/SDL_image.h>  // for IMG_Quit, IMG_GetError, IMG_Init, IMG_L...
-#include <SDL2/SDL_rect.h>         // for SDL_Rect
-#include <iostream>          // for basic_ostream, operator<<, char_traits
-#include <stdexcept>         // for runtime_error
-
-namespace core
-{
-    class IGameController;
-}
+#include <SDL2/SDL.h>             // for SDL_Quit, SDL_Init, SDL_INIT_VIDEO
+#include <SDL2/SDL_error.h>       // for SDL_GetError
+#include <SDL2/SDL_events.h>      // for SDL_PollEvent, SDL_Event, SDL_Even...
+#include <SDL2/SDL_image.h>       // for IMG_Quit, IMG_GetError, IMG_Init
+#include <SDL2/SDL_rect.h>        // for SDL_Rect
+#include <SDL2/SDL_render.h>      // for SDL_RenderCopy, SDL_CreateRenderer
+#include <SDL2/SDL_video.h>       // for SDL_DestroyWindow, SDL_CreateWindow
+#include <iostream>               // for basic_ostream, operator<<, char_tr...
+#include <stdexcept>              // for runtime_error
+#include <vector>                 // for vector
+#include "core/Card.h"            // for Card, Suit
+#include "core/IGameController.h" // for IGameController, PileGroup
+#include "core/Pile.h"            // for Pile
 
 namespace sdl
 {
@@ -52,7 +51,7 @@ namespace sdl
             SDL_WINDOWPOS_CENTERED,
             1024,
             768,
-            SDL_WINDOW_SHOWN);
+            SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
         if (!window_)
         {
@@ -78,6 +77,9 @@ namespace sdl
             SDL_Quit();
             throw std::runtime_error("Failed to create SDL Renderer!");
         }
+
+        // Automatically scale the viewport if the window is resized
+        SDL_RenderSetLogicalSize(renderer_, 1024, 768);
 
         // Load the sprite sheet texture containing the card images.
         // IMPORTANT: Assuming running the executable is from inside the /build folder,
@@ -164,23 +166,132 @@ namespace sdl
         // Clear the entire screen with the current paint color
         SDL_RenderClear(renderer_);
 
-        // --- TEST DRAWING ---
-        // The sprite sheet has cards in a 64x64 grid.
-        // Draw the Ace of Hearts (Row 0, Column 0 on the sprite sheet)
-        SDL_Rect srcAce = {0 * 64, 0 * 64, 64, 64};
-        SDL_Rect destAce = {400, 300, 64, 64}; // X=400, Y=300 on the screen
-        SDL_RenderCopy(renderer_, spriteSheet_, &srcAce, &destAce);
+        // --- Layout Constants ---
+        const int cardW = 96;       // Scaled 1.5x from 64
+        const int cardH = 96;       // Scaled 1.5x from 64
+        const int startX = 50;    // Left margin
+        const int startY = 50;    // Top margin for Stock/Waste/Foundations
+        const int gapX = 100;     // Horizontal space between piles
+        const int tableauY = 150; // Top margin for the 7 Tableau columns
+        const int yOffset = 28;   // Vertical stagger for overlapping cards
 
-        // Draw the Card Back (Row 0, Column 13 on the sprite sheet)
-        SDL_Rect srcBack = {13 * 64, 1 * 64, 64, 64};
-        SDL_Rect destBack = {500, 300, 64, 64}; // X=500, Y=300 on the screen
-        SDL_RenderCopy(renderer_, spriteSheet_, &srcBack, &destBack);
+        // The blank card outline on the sprite sheet for empty piles (Row 0, Col 13)
+        SDL_Rect emptySrc = {13 * 64, 0 * 64, 64, 64};
 
-        // TODO: Iterate over the piles using controller_.getPile().
+        // --- Draw Stock ---
+        SDL_Rect stockDest = {startX, startY, cardW, cardH};
+        const auto &stock = controller_.getPile(core::PileGroup::Stock, 0);
+
+        if (stock.isEmpty())
+        {
+            SDL_RenderCopy(renderer_, spriteSheet_, &emptySrc, &stockDest);
+        }
+        else
+        {
+            for (const auto &card : stock.getCards())
+            {
+                SDL_Rect src = getCardSpriteRect(card);
+                SDL_RenderCopy(renderer_, spriteSheet_, &src, &stockDest);
+            }
+        }
+
+        // --- Draw Waste ---
+        SDL_Rect wasteDest = {startX + gapX, startY, cardW, cardH};
+        const auto &waste = controller_.getPile(core::PileGroup::Waste, 0);
+        if (waste.isEmpty())
+        {
+            SDL_RenderCopy(renderer_, spriteSheet_, &emptySrc, &wasteDest);
+        }
+        else
+        {
+            for (const auto &card : waste.getCards())
+            {
+                SDL_Rect src = getCardSpriteRect(card);
+                SDL_RenderCopy(renderer_, spriteSheet_, &src, &wasteDest);
+            }
+        }
+
+        // --- Draw Foundations ---
+        for (int i = 0; i < 4; ++i)
+        {
+            SDL_Rect foundDst = {startX + (3 + i) * gapX, startY, cardW, cardH};
+            const auto &foundation = controller_.getPile(core::PileGroup::Foundation, i);
+
+            if (foundation.isEmpty())
+            {
+                SDL_RenderCopy(renderer_, spriteSheet_, &emptySrc, &foundDst);
+            }
+            else
+            {
+                for (const auto &card : foundation.getCards())
+                {
+                    SDL_Rect src = getCardSpriteRect(card);
+                    SDL_RenderCopy(renderer_, spriteSheet_, &src, &foundDst);
+                }
+            }
+        }
+
+        // --- Draw Tableaus ---
+        for (int i = 0; i < 7; ++i)
+        {
+            int currentX = startX + i * gapX;
+            int currentY = tableauY;
+            const auto &tableau = controller_.getPile(core::PileGroup::Tableau, i);
+
+            if (tableau.isEmpty())
+            {
+                SDL_Rect tabDst = {currentX, currentY, cardW, cardH};
+                SDL_RenderCopy(renderer_, spriteSheet_, &emptySrc, &tabDst);
+            }
+            else
+            {
+                for (const auto &card : tableau.getCards())
+                {
+                    SDL_Rect dst = {currentX, currentY, cardW, cardH};
+                    SDL_Rect src = getCardSpriteRect(card);
+                    SDL_RenderCopy(renderer_, spriteSheet_, &src, &dst);
+
+                    currentY += (card.isFaceUp() ? yOffset + 10 : yOffset);
+                }
+            }
+        }
 
         // Swap the backbuffer to the front
         // SDL uses double-buffering to prevent screen tearing. All the drawing is done on a hidden background screen, and then 'Presented' to the user all at once.
         SDL_RenderPresent(renderer_);
+    }
+
+    SDL_Rect SDLView::getCardSpriteRect(const core::Card &card) const
+    {
+        // If the card is face down, always return the blue card back
+        if (!card.isFaceUp())
+        {
+            return {13 * 64, 1 * 64, 64, 64}; // Row , COlumn 13
+        }
+
+        // Map the Suit to the correct row on the sprite sheet
+        int row = 0;
+        switch (card.getSuit())
+        {
+        case core::Suit::Hearts:
+            row = 0;
+            break;
+        case core::Suit::Diamonds:
+            row = 1;
+            break;
+        case core::Suit::Clubs:
+            row = 2;
+            break;
+        case core::Suit::Spades:
+            row = 3;
+            break;
+        }
+
+        // 3. Map the Rank to the correct column (0 to 12)
+        int col = static_cast<int>(card.getRank()) - 1;
+
+        // Return the calculated 64x64 source rectangle
+        return {col * 64, row * 64, 64, 64};
     }
 
 } // namespace sdl
