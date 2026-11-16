@@ -30,8 +30,17 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install sdl2 sdl2_image
 
-      - name: Configure CMake
+      - name: Install SDL2 (Windows)
+        if: runner.os == 'Windows'
+        run: vcpkg install sdl2 sdl2-image --triplet x64-windows
+
+      - name: Configure CMake (Ubuntu & macOS)
+        if: runner.os != 'Windows'
         run: cmake -B build
+
+      - name: Configure CMake (Windows)
+        if: runner.os == 'Windows'
+        run: cmake -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
 
       - name: Build Project
         run: cmake --build build
