@@ -17,19 +17,17 @@ jobs:
 
       - name: Extract Feature Commits and Update README
         run: |
-          # Get the latest commit message
           COMMIT_MSG=$(git log -1 --pretty=format:"%s")
           
-          # Check if the commit message starts with "FEAT:"
-          if [[ "$COMMIT_MSG" == FEAT:* ]]; then
-            # Remove the "FEAT: " prefix for cleaner text
-            FEATURE_TEXT=${COMMIT_MSG#FEAT: }
+          # Match either "FEAT:" or "FEATURE:"
+          if [[ "$COMMIT_MSG" =~ ^(FEAT|FEATURE):[[:space:]]*(.*) ]]; then
+            FEATURE_TEXT="${BASH_REMATCH[2]}"
             DATE=$(date +'%Y-%m-%d')
             
-            # Append to README
-            echo "- **[$DATE]** $FEATURE_TEXT" >> README.md
+            # Ensure README ends with a newline before appending
+            [ -n "$(tail -c1 README.md)" ] && echo "" >> README.md
+            echo "* **[$DATE]** $FEATURE_TEXT" >> README.md
             
-            # Commit and push the updated README
             git config --global user.name "github-actions[bot]"
             git config --global user.email "github-actions[bot]@users.noreply.github.com"
             git add README.md
