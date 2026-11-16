@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include <SDL2/SDL_render.h> // for SDL_Renderer
-#include <SDL2/SDL_video.h>  // for SDL_Window
+#include <SDL2/SDL_render.h>  // for SDL_Renderer, SDL_Texture
+#include <SDL2/SDL_video.h>   // for SDL_Window
+
 namespace core
 {
     class IGameController;
@@ -40,6 +41,7 @@ namespace sdl
         core::IGameController &controller_; ///< The interface used to query state and attempt moves
         SDL_Window *window_;                ///< Pointer to the OS-level application window
         SDL_Renderer *renderer_;            ///< Pointer to the GPU hardware-accelerated renderer
+        SDL_Texture *spriteSheet_;          ///< GPU texture holding the card images
         bool isRunning_;                    ///< Flag to keep the main game loop executing
 
         // Helper methods

@@ -28,9 +28,9 @@ endif()
 # 1. Core Engine Primitives (Shared across all games)
 # ------------------------------------------------------------------------------
 add_library(cards_core STATIC
-    src/core/Card.cpp
-    src/core/Deck.cpp
-    src/core/Pile.cpp
+	src/core/Card.cpp
+	src/core/Deck.cpp
+	src/core/Pile.cpp
 )
 target_include_directories(cards_core PUBLIC src)
 
@@ -38,32 +38,36 @@ target_include_directories(cards_core PUBLIC src)
 # 2. Klondike Game Logic Library
 # ------------------------------------------------------------------------------
 add_library(klondike_game STATIC
-    src/games/klondike/KlondikeBoard.cpp
-    src/games/klondike/KlondikeRules.cpp
-    src/games/klondike/KlondikeController.cpp
+	src/games/klondike/KlondikeBoard.cpp
+	src/games/klondike/KlondikeRules.cpp
+	src/games/klondike/KlondikeController.cpp
 )
 target_link_libraries(klondike_game PUBLIC cards_core)
 target_include_directories(klondike_game PUBLIC src)
 
 # Enforce strict flags on libraries
 if(MSVC)
-    target_compile_options(cards_core PRIVATE /W4 /WX /utf-8)
-    target_compile_options(klondike_game PRIVATE /W4 /WX /utf-8)
+	target_compile_options(cards_core PRIVATE /W4 /WX /utf-8)
+	target_compile_options(klondike_game PRIVATE /W4 /WX /utf-8)
 else()
-    target_compile_options(cards_core PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(klondike_game PRIVATE -Wall -Wextra -Wpedantic -Werror)
+	target_compile_options(cards_core PRIVATE -Wall -Wextra -Wpedantic -Werror)
+	target_compile_options(klondike_game PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 # ------------------------------------------------------------------------------
 # 3. CLI Executable (Links to the libraries)
 # ------------------------------------------------------------------------------
-add_executable(klondike_cli 
-    src/cli/main.cpp 
-    src/cli/ConsoleView.cpp
+add_executable(klondike_cli
+	src/cli/main.cpp
+	src/cli/ConsoleView.cpp
 )
 target_link_libraries(klondike_cli PRIVATE klondike_game)
-target_include_directories(klondike_cli PRIVATE src) # Preprocessor include directories
-target_compile_features(klondike_cli PRIVATE cxx_std_14) # Optional: Ensure it compiles with modern C++ standards
+target_include_directories(klondike_cli
+	PRIVATE src
+) # Preprocessor include directories
+target_compile_features(klondike_cli
+	PRIVATE cxx_std_14
+) # Optional: Ensure it compiles with modern C++ standards
 
 # Find SDL2 and SDL2_image (for loading PNGs)
 find_package(SDL2 REQUIRED)
@@ -73,8 +77,14 @@ find_package(SDL2_image REQUIRED)
 add_executable(klondike_sdl src/gui_sdl/main.cpp src/gui_sdl/SDLView.cpp)
 
 # Link the existing engine (klondike_game) alongside the SDL2 libraries
-target_link_libraries(klondike_sdl PRIVATE klondike_game ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
-target_include_directories(klondike_sdl PRIVATE src ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
+target_link_libraries(klondike_sdl
+	PRIVATE
+		klondike_game
+		SDL2::SDL2
+		SDL2_image::SDL2_image
+)
+# Target-based linking handles SDL includes automatically, so only need to include othe src/
+target_include_directories(klondike_sdl PRIVATE src)
 
 # Enforce strict code quality standards across GCC/Clang (Ubuntu/MacOS) and MSVC (Windows)
 if(MSVC)

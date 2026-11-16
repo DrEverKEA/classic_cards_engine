@@ -6,14 +6,13 @@
  *            This project is released under the MIT License.
  */
 
-#include <string>                              // for basic_string
-#include "../src/core/Card.h"                  // for Card
-#include "../src/core/Deck.h"                  // for Deck
-#include "games/klondike/KlondikeBoard.h"      // for KlondikeBoard
-#include "games/klondike/KlondikeController.h" // for KlondikeController
-#include "games/klondike/KlondikeRules.h"      // for KlondikeRules
-#include "core/Pile.h"                         // for Pile
-#include "gtest/gtest.h"                       // for AssertionResult, Message, Test
+#include <string>                               // for basic_string
+#include "../src/core/Card.h"                   // for Card, Rank, Suit
+#include "core/IGameController.h"               // for PileGroup, GameMove
+#include "core/Pile.h"                          // for Pile
+#include "games/klondike/KlondikeController.h"  // for KlondikeController
+#include "games/klondike/KlondikeRules.h"       // for KlondikeRules
+#include "gtest/gtest.h"                        // for AssertionResult, Message
 
 using namespace core;
 
