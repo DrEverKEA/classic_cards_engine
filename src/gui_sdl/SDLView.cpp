@@ -21,6 +21,26 @@
 #include "core/IGameController.h" // for IGameController, PileGroup
 #include "core/Pile.h"            // for Pile
 
+namespace
+{
+    // Sprite Sheet Configuration
+    constexpr int SPRITE_SIZE = 64;
+    constexpr int EMPTY_SLOT_COL = 13;
+    constexpr int EMPTY_SLOT_ROW = 0;
+    constexpr int CARD_BACK_COL = 13;
+    constexpr int CARD_BACK_ROW = 1;
+
+    // Render Layout Configuration
+    constexpr int RENDER_WIDTH = 96;
+    constexpr int RENDER_HEIGHT = 96;
+    constexpr int START_X = 60;
+    constexpr int START_Y = 50;
+    constexpr int GAP_X = 130;
+    constexpr int TABLEAU_Y = 180;
+    constexpr int Y_OFFSET_FACEDOWN = 28;
+    constexpr int Y_OFFSET_FACEUP = 38;
+} // anonymous namespace
+
 namespace sdl
 {
 
@@ -166,20 +186,11 @@ namespace sdl
         // Clear the entire screen with the current paint color
         SDL_RenderClear(renderer_);
 
-        // --- Layout Constants ---
-        const int cardW = 96;       // Scaled 1.5x from 64
-        const int cardH = 96;       // Scaled 1.5x from 64
-        const int startX = 50;    // Left margin
-        const int startY = 50;    // Top margin for Stock/Waste/Foundations
-        const int gapX = 100;     // Horizontal space between piles
-        const int tableauY = 150; // Top margin for the 7 Tableau columns
-        const int yOffset = 28;   // Vertical stagger for overlapping cards
-
         // The blank card outline on the sprite sheet for empty piles (Row 0, Col 13)
-        SDL_Rect emptySrc = {13 * 64, 0 * 64, 64, 64};
+        SDL_Rect emptySrc = { EMPTY_SLOT_COL * SPRITE_SIZE, EMPTY_SLOT_ROW * SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE };
 
         // --- Draw Stock ---
-        SDL_Rect stockDest = {startX, startY, cardW, cardH};
+        SDL_Rect stockDest = { START_X, START_Y, RENDER_WIDTH, RENDER_HEIGHT };
         const auto &stock = controller_.getPile(core::PileGroup::Stock, 0);
 
         if (stock.isEmpty())
@@ -196,7 +207,7 @@ namespace sdl
         }
 
         // --- Draw Waste ---
-        SDL_Rect wasteDest = {startX + gapX, startY, cardW, cardH};
+        SDL_Rect wasteDest = { START_X + GAP_X, START_Y, RENDER_WIDTH, RENDER_HEIGHT };
         const auto &waste = controller_.getPile(core::PileGroup::Waste, 0);
         if (waste.isEmpty())
         {
@@ -214,7 +225,7 @@ namespace sdl
         // --- Draw Foundations ---
         for (int i = 0; i < 4; ++i)
         {
-            SDL_Rect foundDst = {startX + (3 + i) * gapX, startY, cardW, cardH};
+            SDL_Rect foundDst = {START_X + (3 + i) * GAP_X, START_Y, RENDER_WIDTH, RENDER_HEIGHT};
             const auto &foundation = controller_.getPile(core::PileGroup::Foundation, i);
 
             if (foundation.isEmpty())
@@ -234,24 +245,26 @@ namespace sdl
         // --- Draw Tableaus ---
         for (int i = 0; i < 7; ++i)
         {
-            int currentX = startX + i * gapX;
-            int currentY = tableauY;
+            int currentX = START_X + i * GAP_X;
+            int currentY = TABLEAU_Y; // Reset Y position for each column
+            
             const auto &tableau = controller_.getPile(core::PileGroup::Tableau, i);
 
             if (tableau.isEmpty())
             {
-                SDL_Rect tabDst = {currentX, currentY, cardW, cardH};
+                SDL_Rect tabDst = {currentX, currentY, RENDER_WIDTH, RENDER_HEIGHT};
                 SDL_RenderCopy(renderer_, spriteSheet_, &emptySrc, &tabDst);
             }
             else
             {
                 for (const auto &card : tableau.getCards())
                 {
-                    SDL_Rect dst = {currentX, currentY, cardW, cardH};
+                    SDL_Rect dst = {currentX, currentY, RENDER_WIDTH, RENDER_HEIGHT};
                     SDL_Rect src = getCardSpriteRect(card);
                     SDL_RenderCopy(renderer_, spriteSheet_, &src, &dst);
 
-                    currentY += (card.isFaceUp() ? yOffset + 10 : yOffset);
+                    // Shift the Y position down for the next card in this pile
+                    currentY += (card.isFaceUp() ? Y_OFFSET_FACEUP : Y_OFFSET_FACEDOWN);
                 }
             }
         }
@@ -266,7 +279,7 @@ namespace sdl
         // If the card is face down, always return the blue card back
         if (!card.isFaceUp())
         {
-            return {13 * 64, 1 * 64, 64, 64}; // Row , COlumn 13
+            return { CARD_BACK_COL * SPRITE_SIZE, CARD_BACK_ROW * SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE };
         }
 
         // Map the Suit to the correct row on the sprite sheet
@@ -291,7 +304,7 @@ namespace sdl
         int col = static_cast<int>(card.getRank()) - 1;
 
         // Return the calculated 64x64 source rectangle
-        return {col * 64, row * 64, 64, 64};
+        return { col * SPRITE_SIZE, row * SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE };
     }
 
 } // namespace sdl
