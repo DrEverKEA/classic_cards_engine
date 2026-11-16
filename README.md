@@ -77,5 +77,17 @@ The CLI accepts text commands to move cards around the board. Enter a command an
 
 ### Changelog
 
-* **[2026-11-16]** Implemented SDL2 window initialization, hardware-accelerated game loop, and sprite sheet texture slicing.
-* **[2026-11-16]** Implement responsive scaling and finalize standard Solitaire layout.
+* **[2026-10-25]** Implemented core Card entity with strict type safety and TDD
+* **[2026-10-25]** Implemented Deck factory and refine Card mechanics via TDD
+* **[2026-10-26]** Implemented Pile entity, sub-stack mechanics via TDD and integrate Doxygen build targets
+* **[2026-10-31]** Implemented KlondikeBoard controller and standard 28-card deal
+* **[2026-11-01]** Implemented stateless Klondike rules validator via TDD
+* **[2026-11-01]** Wrote the signature of the core methods of the Klondike Controller and wrote the associated test to help with the actual implementation
+* **[2026-11-01]** Architectural adjustments to KlondikeBoard, to facilitate the KlondikeController. Plus: added the test for the Controller.
+* **[2026-11-03]** Implemented MVC Controller and expanded Deck API to support waste recycling
+* **[2026-11-08]** Built a playable CLI version, updated Pile API, and finalized the README file.
+* **[2026-11-09]** Implemented win-state detection and game restart loop.
+* **[2026-11-09]** Added a manual restart command for dead-end games.
+* **[2026-11-16]** Introduce SDL2 GUI skeleton and strictly decouple Views
+* **[2026-11-16]** Implemented the SDL2 window initialization, persistent game loop
+* **[2026-11-16]** Implement responsive scaling and finalize standard Solitaire layout(base)
