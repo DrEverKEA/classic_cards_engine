@@ -75,4 +75,4 @@ The CLI accepts text commands to move cards around the board. Enter a command an
 
     MVC Pattern: The KlondikeController acts as a strict facade, keeping the ConsoleView completely ignorant of the underlying game mechanics (KlondikeRules, Deck, Pile).
 
-    Strict Header Management: Integrated Include-What-You-Use (IWYU) directly into the CMake build pipeline to guarantee optimal dependency resolution and fast compilation times.
+    Strict Header Management: Integrated Include-What-You-Use (IWYU) directly into the CMake build pipeline to guarantee optimal dependency resolution and fast compilation times.- **[2026-11-16]** Implement responsive scaling and finalize standard Solitaire layout
