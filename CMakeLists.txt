@@ -65,6 +65,17 @@ target_link_libraries(klondike_cli PRIVATE klondike_game)
 target_include_directories(klondike_cli PRIVATE src) # Preprocessor include directories
 target_compile_features(klondike_cli PRIVATE cxx_std_14) # Optional: Ensure it compiles with modern C++ standards
 
+# Find SDL2 and SDL2_image (for loading PNGs)
+find_package(SDL2 REQUIRED)
+find_package(SDL2_image REQUIRED)
+
+# Create the new GUI executable
+add_executable(klondike_sdl src/gui_sdl/main.cpp src/gui_sdl/SDLView.cpp)
+
+# Link the existing engine (klondike_game) alongside the SDL2 libraries
+target_link_libraries(klondike_sdl PRIVATE klondike_game ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
+target_include_directories(klondike_sdl PRIVATE src ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
+
 # Enforce strict code quality standards across GCC/Clang (Ubuntu/MacOS) and MSVC (Windows)
 if(MSVC)
 	target_compile_options(klondike_cli PRIVATE /W4 /WX /utf-8)

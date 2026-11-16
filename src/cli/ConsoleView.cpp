@@ -20,7 +20,7 @@
 namespace cli
 {
 
-    ConsoleView::ConsoleView(core::KlondikeController &controller) : controller_(controller) {}
+    ConsoleView::ConsoleView(core::IGameController &controller) : controller_(controller) {}
 
     std::string ConsoleView::formatCard(const core::Card &card) const
     {

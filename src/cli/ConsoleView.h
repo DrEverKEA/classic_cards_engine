@@ -9,7 +9,7 @@
 #pragma once
 
 #include <string>
-#include "games/klondike/KlondikeController.h"
+#include "core/IGameController.h"
 namespace core
 {
     class Card;
@@ -24,13 +24,13 @@ namespace cli
     {
     public:
         // Constructs the CLI view attached to a game controller.
-        explicit ConsoleView(core::KlondikeController &controller);
+        explicit ConsoleView(core::IGameController &controller);
 
         // Starts the main text - based game loop.
         void run();
 
     private:
-        core::KlondikeController controller_;
+        core::IGameController &controller_;
 
         void renderBoard() const;
         std::string formatCard(const core::Card &card) const;
