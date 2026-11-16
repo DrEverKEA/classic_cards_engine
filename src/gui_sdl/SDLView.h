@@ -7,8 +7,13 @@
  */
 
 #pragma once
-#include "core/IGameController.h"
-#include <SDL2/SDL.h>
+
+#include <SDL2/SDL_render.h> // for SDL_Renderer
+#include <SDL2/SDL_video.h>  // for SDL_Window
+namespace core
+{
+    class IGameController;
+}
 
 namespace sdl
 {

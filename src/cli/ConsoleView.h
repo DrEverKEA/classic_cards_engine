@@ -9,10 +9,11 @@
 #pragma once
 
 #include <string>
-#include "core/IGameController.h"
+
 namespace core
 {
     class Card;
+    class IGameController;
 }
 
 namespace cli

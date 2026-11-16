@@ -7,15 +7,12 @@
  */
 
 #include "ConsoleView.h"
-#include <stddef.h>                       // for int
-#include <array>                          // for array
-#include <iostream>                       // for basic_ostream, operator<<, basic_ist...
-#include <sstream>                        // for basic_stringstream
-#include <vector>                         // for vector
-#include "core/Card.h"                    // for Card, Rank, Suit
-#include "core/Deck.h"                    // for Deck
-#include "games/klondike/KlondikeBoard.h" // for KlondikeBoard
-#include "core/Pile.h"                    // for Pile
+#include <iostream>               // for basic_ostream, operator<<, basic_ist...
+#include <sstream>                // for basic_stringstream
+#include <vector>                 // for vector
+#include "core/Card.h"            // for Card, Rank, Suit
+#include "core/IGameController.h" // for IGameController, PileGroup, GameMove
+#include "core/Pile.h"            // for Pile
 
 namespace cli
 {
@@ -77,11 +74,11 @@ namespace cli
         std::cout << "\n========================================\n";
 
         // Draw Stock and Waste (Index 0 because there is only one of each)
-        const core::Pile& stock = controller_.getPile(core::PileGroup::Stock, 0);
+        const core::Pile &stock = controller_.getPile(core::PileGroup::Stock, 0);
         std::cout << "Stock: " << (stock.isEmpty() ? "[   ]" : "[XXX]")
                   << " (" << stock.size() << ")   ";
 
-        const core::Pile& waste = controller_.getPile(core::PileGroup::Waste, 0);
+        const core::Pile &waste = controller_.getPile(core::PileGroup::Waste, 0);
         std::cout << "Waste: ";
         if (waste.isEmpty())
         {
@@ -98,7 +95,7 @@ namespace cli
         int foundationCount = controller_.getPileCount(core::PileGroup::Foundation);
         for (int i = 0; i < foundationCount; ++i)
         {
-            const core::Pile& foundation = controller_.getPile(core::PileGroup::Foundation, i);
+            const core::Pile &foundation = controller_.getPile(core::PileGroup::Foundation, i);
             std::cout << "F" << i << ": ";
             if (foundation.isEmpty())
                 std::cout << "[   ]";
@@ -113,7 +110,7 @@ namespace cli
         int tableauCount = controller_.getPileCount(core::PileGroup::Tableau);
         for (int i = 0; i < tableauCount; ++i)
         {
-            const core::Pile& tableau = controller_.getPile(core::PileGroup::Tableau, i);
+            const core::Pile &tableau = controller_.getPile(core::PileGroup::Tableau, i);
             std::cout << "T" << i << ": ";
             if (tableau.isEmpty())
             {
@@ -216,7 +213,7 @@ namespace cli
                 if (choice == "y" || choice == "Y")
                 {
                     controller_.startGame(); // Resets the deck, shuffles, and redeals
-                    continue;                   // Skips the rest of the loop and starts fresh
+                    continue;                // Skips the rest of the loop and starts fresh
                 }
                 else
                 {
