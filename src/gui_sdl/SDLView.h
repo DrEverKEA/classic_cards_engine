@@ -62,5 +62,8 @@ namespace sdl
 
         // Calculate the exact 64x64 slice on the sprite sheet for a given card
         SDL_Rect getCardSpriteRect(const core::Card &card) const;
+
+        // Translates an (X, Y) screen coordinate into a game entity selection
+        void handleMouseClick(int x, int y);
     };
 } // namespace sdl

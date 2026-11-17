@@ -7,19 +7,22 @@
  */
 
 #include "SDLView.h"
-#include <SDL2/SDL.h>             // for SDL_Quit, SDL_Init, SDL_INIT_VIDEO
-#include <SDL2/SDL_error.h>       // for SDL_GetError
-#include <SDL2/SDL_events.h>      // for SDL_PollEvent, SDL_Event, SDL_Even...
-#include <SDL2/SDL_image.h>       // for IMG_Quit, IMG_GetError, IMG_Init
-#include <SDL2/SDL_rect.h>        // for SDL_Rect
-#include <SDL2/SDL_render.h>      // for SDL_RenderCopy, SDL_CreateRenderer
-#include <SDL2/SDL_video.h>       // for SDL_DestroyWindow, SDL_CreateWindow
-#include <iostream>               // for basic_ostream, operator<<, char_tr...
-#include <stdexcept>              // for runtime_error
-#include <vector>                 // for vector
-#include "core/Card.h"            // for Card, Suit
-#include "core/IGameController.h" // for IGameController, PileGroup
-#include "core/Pile.h"            // for Pile
+#include <SDL2/SDL.h>              // for SDL_Quit, SDL_Init, SDL_INIT_VIDEO
+#include <SDL2/SDL_error.h>        // for SDL_GetError
+#include <SDL2/SDL_events.h>       // for SDL_EventType, SDL_PollEvent, SDL_...
+#include <SDL2/SDL_image.h>        // for IMG_Quit, IMG_GetError, IMG_Init
+#include <SDL2/SDL_rect.h>         // for SDL_Rect
+#include <SDL2/SDL_render.h>       // for SDL_RenderCopy, SDL_CreateRenderer
+#include <SDL2/SDL_video.h>        // for SDL_DestroyWindow, SDL_CreateWindow
+#include <SDL2/SDL_mouse.h>             // for SDL_BUTTON_LEFT
+#include <stddef.h>                // for size_t
+#include <iostream>                // for basic_ostream, operator<<, char_tr...
+#include <stdexcept>               // for runtime_error
+#include <vector>                  // for vector
+#include "core/Card.h"             // for Card, Suit
+#include "core/IGameController.h"  // for IGameController, PileGroup
+#include "core/Pile.h"             // for Pile
+
 
 namespace
 {
@@ -169,7 +172,14 @@ namespace sdl
                 // This triggers when the user clicks the OS window's 'X' button
                 isRunning_ = false;
                 break;
-                // TODO: add case SDL_MOUSEBUTTONDOWN: to click cards!
+
+            case SDL_MOUSEBUTTONDOWN:
+                // Only register Left Clicks
+                if (event.button.button == SDL_BUTTON_LEFT)
+                {
+                    // event.button.x and .y are already perfectly scaled to 1024x768!
+                    handleMouseClick(event.button.x, event.button.y);
+                }
 
             default:
                 break;
@@ -187,10 +197,10 @@ namespace sdl
         SDL_RenderClear(renderer_);
 
         // The blank card outline on the sprite sheet for empty piles (Row 0, Col 13)
-        SDL_Rect emptySrc = { EMPTY_SLOT_COL * SPRITE_SIZE, EMPTY_SLOT_ROW * SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE };
+        SDL_Rect emptySrc = {EMPTY_SLOT_COL * SPRITE_SIZE, EMPTY_SLOT_ROW * SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE};
 
         // --- Draw Stock ---
-        SDL_Rect stockDest = { START_X, START_Y, RENDER_WIDTH, RENDER_HEIGHT };
+        SDL_Rect stockDest = {START_X, START_Y, RENDER_WIDTH, RENDER_HEIGHT};
         const auto &stock = controller_.getPile(core::PileGroup::Stock, 0);
 
         if (stock.isEmpty())
@@ -207,7 +217,7 @@ namespace sdl
         }
 
         // --- Draw Waste ---
-        SDL_Rect wasteDest = { START_X + GAP_X, START_Y, RENDER_WIDTH, RENDER_HEIGHT };
+        SDL_Rect wasteDest = {START_X + GAP_X, START_Y, RENDER_WIDTH, RENDER_HEIGHT};
         const auto &waste = controller_.getPile(core::PileGroup::Waste, 0);
         if (waste.isEmpty())
         {
@@ -247,7 +257,7 @@ namespace sdl
         {
             int currentX = START_X + i * GAP_X;
             int currentY = TABLEAU_Y; // Reset Y position for each column
-            
+
             const auto &tableau = controller_.getPile(core::PileGroup::Tableau, i);
 
             if (tableau.isEmpty())
@@ -279,7 +289,7 @@ namespace sdl
         // If the card is face down, always return the blue card back
         if (!card.isFaceUp())
         {
-            return { CARD_BACK_COL * SPRITE_SIZE, CARD_BACK_ROW * SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE };
+            return {CARD_BACK_COL * SPRITE_SIZE, CARD_BACK_ROW * SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE};
         }
 
         // Map the Suit to the correct row on the sprite sheet
@@ -304,7 +314,85 @@ namespace sdl
         int col = static_cast<int>(card.getRank()) - 1;
 
         // Return the calculated 64x64 source rectangle
-        return { col * SPRITE_SIZE, row * SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE };
+        return {col * SPRITE_SIZE, row * SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE};
     }
 
+    void SDLView::handleMouseClick(int x, int y)
+    {
+        // Check Stock
+        if (x >= START_X && x <= START_X + RENDER_WIDTH &&
+            y >= START_Y && y <= START_Y + RENDER_HEIGHT)
+        {
+            std::cout << "Action: Clicked Stock.\n";
+            return; // We found the click, no need to check other piles
+        }
+
+        // Check Waste
+        if (x >= START_X + GAP_X && x <= START_X + GAP_X + RENDER_WIDTH &&
+            y >= START_Y && y <= START_Y + RENDER_HEIGHT)
+        {
+            std::cout << "Action: CLicked Waste.\n";
+            return;
+        }
+
+        // Check Foundations
+        for (int i = 0; i < 4; ++i)
+        {
+            int foundX = START_X + (3 + i) * GAP_X;
+            if (x >= foundX && x <= foundX + RENDER_WIDTH &&
+                y >= START_Y && y <= START_Y + RENDER_HEIGHT)
+            {
+                std::cout << "Action: Clicked Foundation " << i << ".\n";
+            }
+        }
+
+        // Check Tableaus
+        for (int i = 0; i < 7; ++i)
+        {
+            int tabX = START_X + i * GAP_X;
+
+            // Fast bounding box check for the column's X axis before doing Y math
+            if (x >= tabX && x <= tabX + RENDER_WIDTH)
+            {
+                const auto &tableau = controller_.getPile(core::PileGroup::Tableau, i);
+                int currentY = TABLEAU_Y;
+                int clickedCardIndex = -1; // -1 means no card was clicked
+
+                if (tableau.isEmpty())
+                {
+                    if (y >= currentY && y <= currentY + RENDER_HEIGHT)
+                    {
+                        std::cout << "Action: Clicked empty Tableau " << i << ".\n";
+                        return;
+                    }
+                }
+                else
+                {
+                    const auto &cards = tableau.getCards();
+                    for (size_t cardIndex = 0; cardIndex < cards.size(); ++cardIndex)
+                    {
+                        // If the mouse falls within this card's 96x96 rectangle
+                        if (y >= currentY && y <= currentY + RENDER_HEIGHT)
+                        {
+                            // We don't return immediately! A card drawn beneath this one
+                            // might overlap. By continuing the loop, the top-most overlapping
+                            // card will overwrite this value.
+                            clickedCardIndex = static_cast<int>(cardIndex);
+                        }
+
+                        // Advance currentY for the next card down (identical to render loop)
+                        currentY += (cards[cardIndex].isFaceUp() ? Y_OFFSET_FACEUP : Y_OFFSET_FACEDOWN);
+                    }
+
+                    if (clickedCardIndex != -1)
+                    {
+                        std::cout << "Action: Clicked Tableau " << i << ", Card Index " << clickedCardIndex << ".\n";
+                        return;
+                    }
+                }
+            }
+        }
+
+        // If the code reaches here, they clicked the empty green felt.
+    }
 } // namespace sdl
