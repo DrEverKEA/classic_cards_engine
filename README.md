@@ -92,3 +92,4 @@ The CLI accepts text commands to move cards around the board. Enter a command an
 * **[2026-11-16]** Implemented the SDL2 window initialization, persistent game loop
 * **[2026-11-16]** Implement responsive scaling and finalize standard Solitaire layout(base)
 * **[2026-11-17]** Implement coordinate mapping and mouse hit detection
+* **[2026-11-18]** Implement visual selection highlight and perfect UI hitboxes
