@@ -16,6 +16,7 @@
 #include <SDL2/SDL_video.h>       // for SDL_DestroyWindow, SDL_CreateWindow
 #include <SDL2/SDL_mouse.h>       // for SDL_BUTTON_LEFT
 #include <SDL2/SDL_blendmode.h>   // for SDL_BlendMode
+#include <SDL2/SDL_keycode.h>     // for SDL_KeyCode
 #include <stddef.h>               // for size_t
 #include <iostream>               // for basic_ostream, operator<<, char_tr...
 #include <stdexcept>              // for runtime_error
@@ -173,6 +174,15 @@ namespace sdl
                 isRunning_ = false;
                 break;
 
+            case SDL_KEYDOWN:
+                // Catch the 'R' key for Reset
+                if (event.key.keysym.sym == SDLK_r)
+                {
+                    controller_.resetGame();
+                    clearSelection();
+                    std::cout << "Game Reser!\n";
+                }
+
             case SDL_MOUSEBUTTONDOWN:
                 // Only register Left Clicks
                 if (event.button.button == SDL_BUTTON_LEFT)
@@ -189,12 +199,16 @@ namespace sdl
 
     void SDLView::render()
     {
-        // Set the renderer's paint color to a classic dark green
-        // Arguments are (renderer, Red, Green, Blue, Alpha).
-        SDL_SetRenderDrawColor(renderer_, 35, 120, 65, 255);
+        // Clear the entire absolute window with BLACK (creates clean dead zones)
+        SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
 
         // Clear the entire screen with the current paint color
         SDL_RenderClear(renderer_);
+
+        // Draw the Green Felt only over the 1024x768 logical game area
+        SDL_SetRenderDrawColor(renderer_, 35, 120, 65, 255);
+        SDL_Rect feltRect = {0, 0, 1024, 768};
+        SDL_RenderFillRect(renderer_, &feltRect);
 
         // The blank card outline on the sprite sheet for empty piles (Row 0, Col 13)
         SDL_Rect emptySrc = {EMPTY_SLOT_COL * SPRITE_SIZE, EMPTY_SLOT_ROW * SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE};
@@ -273,6 +287,19 @@ namespace sdl
 
         // Draw the visual selection highlight on top of everything
         renderSelection();
+
+        // --- WIN SCREEN OVERLAY & TEXT ---
+        if (controller_.isGameWon())
+        {
+            SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
+            SDL_SetRenderDrawColor(renderer_, 255, 215, 0, 150);                     // Gold, 60% opacity
+            SDL_RenderFillRect(renderer_, nullptr);                                  // Passing nullptr automatically fills the entire 1024x768 logical area
+            SDL_SetWindowTitle(window_, "YOU WON, MATE! - Hit R to reset the Game"); // Instant UI Text Hack: Update the OS Window Title
+        }
+        else
+        {
+            SDL_SetWindowTitle(window_, "Klondike Solitaire"); // Keep the standard title during normal play
+        }
 
         // Swap the backbuffer to the front
         // SDL uses double-buffering to prevent screen tearing. All the drawing is done on a hidden background screen, and then 'Presented' to the user all at once.
@@ -402,6 +429,10 @@ namespace sdl
 
     void SDLView::handleMouseClick(int x, int y)
     {
+
+        // Freeze inputs if the engine says we won!
+        if (controller_.isGameWon())
+            return;
 
         ClickTarget target = getClickTarget(x, y);
 
