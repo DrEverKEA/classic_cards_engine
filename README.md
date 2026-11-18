@@ -97,3 +97,4 @@ The CLI accepts text commands to move cards around the board. Enter a command an
 * **[2026-11-16]** Implement responsive scaling and finalize standard Solitaire layout(base)
 * **[2026-11-17]** Implement coordinate mapping and mouse hit detection
 * **[2026-11-18]** Implement visual selection highlight and perfect UI hitboxes
+* **[2026-11-18]** Implement win state, reset mechanics, and UI letterboxing
