@@ -14,11 +14,10 @@
 namespace core
 {
     class Card;
-}
-namespace core
-{
     class IGameController;
-} //
+    enum class PileGroup;
+    class Pile;
+}
 
 namespace sdl
 {
@@ -48,6 +47,21 @@ namespace sdl
         SDL_Texture *spriteSheet_;          ///< GPU texture holding the card images
         bool isRunning_;                    ///< Flag to keep the main game loop executing
 
+        // Data packet for a resolved screen click
+        struct ClickTarget
+        {
+            bool valid = false;
+            core::PileGroup group;
+            int pileIndex = 0;
+            int cardIndex = -1;
+        };
+
+        // --- Selection State ---
+        bool hasSelection_ = false;
+        core::PileGroup selGroup_;
+        int selPileIndex_ = 0;
+        int selCardIndex_ = -1;
+
         // Helper methods
 
         // Polls the SDL event queue for user input.
@@ -65,5 +79,9 @@ namespace sdl
 
         // Translates an (X, Y) screen coordinate into a game entity selection
         void handleMouseClick(int x, int y);
+        void clearSelection();
+        ClickTarget getClickTarget(int x, int y) const;
+        void renderSelection();
+        int getCardY(const core::Pile &tableau, int cardIndex) const;
     };
 } // namespace sdl
