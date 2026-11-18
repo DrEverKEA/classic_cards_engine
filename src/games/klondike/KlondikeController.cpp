@@ -29,6 +29,12 @@ namespace core
 
     bool KlondikeController::isGameWon() const
     {
+        // // --- TEMPORARY DEV HACK To TEST WIN STATE ---
+        // // Win the game the moment the first Foundation has at least 1 card on it
+        // if (board_.getFoundations()[0].size() >= 1) {
+        //     return true;
+        // }
+        // return false;
         for (int i = 0; i < 4; ++i)
         {
             if (board_.getFoundations()[i].size() != 13)
