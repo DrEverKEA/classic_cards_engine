@@ -49,7 +49,7 @@ namespace sdl
 {
 
     SDLView::SDLView(core::IGameController &controller)
-        : controller_(controller), window_(nullptr), renderer_(nullptr), spriteSheet_(nullptr), isRunning_(false), hasSelection_(false)
+        : controller_(controller), window_(nullptr), renderer_(nullptr), spriteSheet_(nullptr), isRunning_(false), dragGroup_(core::PileGroup::Tableau)
     {
         // Initialize the SDL2 video subsystem: SDL_INIT_VIDEO allows us to create windows and draw graphics.
         if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -179,17 +179,30 @@ namespace sdl
                 if (event.key.keysym.sym == SDLK_r)
                 {
                     controller_.resetGame();
-                    clearSelection();
-                    std::cout << "Game Reser!\n";
+                    clearDrag();
+                    std::cout << "Game Reset!\n";
                 }
+                break;
 
             case SDL_MOUSEBUTTONDOWN:
                 // Only register Left Clicks
                 if (event.button.button == SDL_BUTTON_LEFT)
                 {
                     // event.button.x and .y are already perfectly scaled to 1024x768!
-                    handleMouseClick(event.button.x, event.button.y);
+                    handleMouseDown(event.button.x, event.button.y);
                 }
+                break;
+
+            case SDL_MOUSEBUTTONUP:
+                if (event.button.button == SDL_BUTTON_LEFT)
+                {
+                    handleMouseUp(event.button.x, event.button.y);
+                }
+                break;
+
+            case SDL_MOUSEMOTION:
+                handleMouseMotion(event.motion.x, event.motion.y);
+                break;
 
             default:
                 break;
@@ -233,36 +246,45 @@ namespace sdl
         // --- Draw Waste ---
         SDL_Rect wasteDest = {START_X + GAP_X, START_Y, RENDER_WIDTH, RENDER_HEIGHT};
         const auto &waste = controller_.getPile(core::PileGroup::Waste, 0);
-        if (waste.isEmpty())
+        const auto &wasteCards = waste.getCards();
+        size_t wasteDrawCount = wasteCards.size();
+
+        if (isDragging_ && dragGroup_ == core::PileGroup::Waste && wasteDrawCount > 0)
+        {
+            wasteDrawCount--; // Hide top card while dragging
+        }
+
+        if (wasteDrawCount == 0)
         {
             SDL_RenderCopy(renderer_, spriteSheet_, &emptySrc, &wasteDest);
         }
         else
         {
-            for (const auto &card : waste.getCards())
-            {
-                SDL_Rect src = getCardSpriteRect(card);
-                SDL_RenderCopy(renderer_, spriteSheet_, &src, &wasteDest);
-            }
+            SDL_Rect src = getCardSpriteRect(wasteCards[wasteDrawCount - 1]);
+            SDL_RenderCopy(renderer_, spriteSheet_, &src, &wasteDest);
         }
 
         // --- Draw Foundations ---
         for (int i = 0; i < 4; ++i)
         {
-            SDL_Rect foundDst = {START_X + (3 + i) * GAP_X, START_Y, RENDER_WIDTH, RENDER_HEIGHT};
+            SDL_Rect foundationDest = {START_X + (3 + i) * GAP_X, START_Y, RENDER_WIDTH, RENDER_HEIGHT};
             const auto &foundation = controller_.getPile(core::PileGroup::Foundation, i);
+            const auto &foundationCards = foundation.getCards();
+            size_t foundationDrawCount = foundationCards.size();
 
-            if (foundation.isEmpty())
+            if (isDragging_ && dragGroup_ == core::PileGroup::Foundation && dragPileIndex_ == i && foundationDrawCount > 0)
             {
-                SDL_RenderCopy(renderer_, spriteSheet_, &emptySrc, &foundDst);
+                foundationDrawCount--; // Hide top card while dragging
+            }
+
+            if (foundationDrawCount == 0)
+            {
+                SDL_RenderCopy(renderer_, spriteSheet_, &emptySrc, &foundationDest);
             }
             else
             {
-                for (const auto &card : foundation.getCards())
-                {
-                    SDL_Rect src = getCardSpriteRect(card);
-                    SDL_RenderCopy(renderer_, spriteSheet_, &src, &foundDst);
-                }
+                SDL_Rect src = getCardSpriteRect(foundationCards[foundationDrawCount - 1]);
+                SDL_RenderCopy(renderer_, spriteSheet_, &src, &foundationDest);
             }
         }
 
@@ -275,18 +297,23 @@ namespace sdl
 
             for (size_t c = 0; c < cards.size(); ++c)
             {
-                // The Single Source of Truth for where to draw the sprite!
+                // Skip cards currently being dragged
+                if (isDragging_ && dragGroup_ == core::PileGroup::Tableau &&
+                    dragPileIndex_ == i && c >= static_cast<size_t>(dragCardIndex_))
+                {
+                    continue;
+                }
+
                 int cardY = getCardY(tableau, static_cast<int>(c));
 
                 SDL_Rect destRect = {tabX, cardY, RENDER_WIDTH, RENDER_HEIGHT};
                 SDL_Rect srcRect = getCardSpriteRect(cards[c]);
-
                 SDL_RenderCopy(renderer_, spriteSheet_, &srcRect, &destRect);
             }
         }
 
         // Draw the visual selection highlight on top of everything
-        renderSelection();
+        renderDraggedCards();
 
         // --- WIN SCREEN OVERLAY & TEXT ---
         if (controller_.isGameWon())
@@ -419,15 +446,23 @@ namespace sdl
         return target; // Returns invalid if clicked empty green felt
     }
 
-    void SDLView::clearSelection()
+    void SDLView::clearDrag()
     {
-        hasSelection_ = false;
-        selPileIndex_ = 0;
-        selCardIndex_ = -1;
-        std::cout << "Selection cleared!\n";
+        isDragging_ = false;
+        dragPileIndex_ = 0;
+        dragCardIndex_ = -1;
     }
 
-    void SDLView::handleMouseClick(int x, int y)
+    void SDLView::handleMouseMotion(int x, int y)
+    {
+        if (isDragging_)
+        {
+            mouseX_ = x;
+            mouseY_ = y;
+        }
+    }
+
+    void SDLView::handleMouseDown(int x, int y)
     {
 
         // Freeze inputs if the engine says we won!
@@ -439,7 +474,6 @@ namespace sdl
         // If they clicked the green felt, cancel any active selection
         if (!target.valid)
         {
-            clearSelection();
             return;
         }
 
@@ -447,114 +481,103 @@ namespace sdl
         // The Stock pile doesn't need a two-click destination. Clicking it draws a card.
         if (target.group == core::PileGroup::Stock)
         {
-            if (controller_.draw())
-            {
-                std::cout << "SUCCESS: Drew card from Stock!\n";
-            }
-            else
-            {
-                std::cout << "INVALID MOVE: Cannot draw right now!\n";
-            }
-            clearSelection();
+            controller_.draw();
             return;
         }
 
-        // --- STATE 0: NO SELECTION ACTIVE ---
-        if (!hasSelection_)
+        // --- Validate source pile ---
+        const auto &targetPile = controller_.getPile(target.group, target.pileIndex);
+        if (targetPile.isEmpty())
+            return;
+
+        // Prevent dragging face-down cards in the Tableau
+        if (target.cardIndex != -1 && !targetPile.getCards()[target.cardIndex].isFaceUp())
+            return;
+
+        // Lock in the selection
+        isDragging_ = true;
+        dragGroup_ = target.group;
+        dragPileIndex_ = target.pileIndex;
+        dragCardIndex_ = target.cardIndex;
+        mouseX_ = x;
+        mouseY_ = y;
+
+        // Calculate grab offset so the card stays pinned where the cursor clicked it
+        int cardBaseX = START_X;
+        int cardBaseY = START_Y;
+
+        if (dragGroup_ == core::PileGroup::Tableau)
         {
-            // Prevent selecting empty tableaus/foundations as a source
-            const auto &targetPile = controller_.getPile(target.group, target.pileIndex);
-            if (targetPile.isEmpty())
-                return;
-
-            // Prevent selecting facedown cards in the tableau
-            if (target.cardIndex != -1 && !targetPile.getCards()[target.cardIndex].isFaceUp())
-                return;
-
-            // Lock in the selection
-            hasSelection_ = true;
-            selGroup_ = target.group;
-            selPileIndex_ = target.pileIndex;
-            selCardIndex_ = target.cardIndex;
-
-            std::cout << "Selected Source Pile.\n";
+            cardBaseX = START_X + dragPileIndex_ * GAP_X;
+            cardBaseY = getCardY(targetPile, dragCardIndex_);
         }
-        // --- STATE 1: DESTINATION CLICKED ---
-        else
+        else if (dragGroup_ == core::PileGroup::Waste)
         {
-            // If they click the exact same pile, they are just deselecting it
-            if (selGroup_ == target.group && selPileIndex_ == target.pileIndex)
-            {
-                clearSelection();
-                return;
-            }
-
-            // Calculate how many cards are being moved (for Tableau stacks)
-            int cardCount = 1;
-            if (selGroup_ == core::PileGroup::Tableau && selCardIndex_ != -1)
-            {
-                const auto &srcPile = controller_.getPile(selGroup_, selPileIndex_);
-                cardCount = srcPile.getCards().size() - selCardIndex_;
-            }
-
-            // Construct the GameMove request
-            core::GameMove move(selGroup_, selPileIndex_, target.group, target.pileIndex, cardCount);
-
-            // Send to the Game Engine (Controller)
-            if (controller_.attemptMove(move))
-            {
-                std::cout << "SUCCESS: Cards moved!\n";
-            }
-            else
-            {
-                std::cout << "INVALID MOVE: Engine rejected the request.\n";
-            }
-            // Always clear the visual selection after an attempt, success or fail
-            clearSelection();
+            cardBaseX = START_X + GAP_X;
         }
+        else if (dragGroup_ == core::PileGroup::Foundation)
+        {
+            cardBaseX = START_X + (3 + dragPileIndex_) * GAP_X;
+        }
+
+        dragOffsetX_ = x - cardBaseX;
+        dragOffsetY_ = y - cardBaseY;
     }
 
-    void SDLView::renderSelection()
+    void SDLView::handleMouseUp(int x, int y)
     {
-        if (!hasSelection_)
+        if (!isDragging_)
             return;
 
-        int highlightX = 0;
-        int highlightY = 0;
-        int highlightH = RENDER_HEIGHT; // Default to 1 card height
+        ClickTarget target = getClickTarget(x, y);
 
-        if (selGroup_ == core::PileGroup::Tableau)
+        // Attempt move if dropped on a valid destination different from the source
+        if (target.valid && !(dragGroup_ == target.group && dragPileIndex_ == target.pileIndex))
         {
-            highlightX = START_X + selPileIndex_ * GAP_X;
-            const auto &tableau = controller_.getPile(selGroup_, selPileIndex_);
-
-            highlightY = getCardY(tableau, selCardIndex_);
-            highlightH = RENDER_HEIGHT;
-
-            // Stretch the yellow box if moving a stack
-            if (selCardIndex_ != -1 && selCardIndex_ < static_cast<int>(tableau.getCards().size()) - 1)
+            int cardCount = 1;
+            if (dragGroup_ == core::PileGroup::Tableau && dragCardIndex_ != -1)
             {
-                int bottomY = getCardY(tableau, static_cast<int>(tableau.getCards().size()) - 1);
-                highlightH = (bottomY + RENDER_HEIGHT) - highlightY;
+                const auto &srcPile = controller_.getPile(dragGroup_, dragPileIndex_);
+                cardCount = static_cast<int>(srcPile.getCards().size()) - dragCardIndex_;
             }
-        }
-        else if (selGroup_ == core::PileGroup::Waste)
-        {
-            highlightX = START_X + GAP_X;
-            highlightY = START_Y;
-        }
-        else if (selGroup_ == core::PileGroup::Foundation)
-        {
-            // Math exactly matches the Foundation render loop
-            highlightX = START_X + (3 + selPileIndex_) * GAP_X;
-            highlightY = START_Y;
+
+            core::GameMove move(dragGroup_, dragPileIndex_, target.group, target.pileIndex, cardCount);
+            controller_.attemptMove(move);
         }
 
-        // Draw a semi-transparent yellow overlay
-        SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
-        SDL_SetRenderDrawColor(renderer_, 255, 255, 0, 100); // RGBA (100 = ~40% opacity)
-        SDL_Rect highlightRect = {highlightX, highlightY, RENDER_WIDTH, highlightH};
-        SDL_RenderFillRect(renderer_, &highlightRect);
+        // Always clear drag (invalid moves automatically snap back on next frame)
+        clearDrag();
+    }
+
+    void SDLView::renderDraggedCards()
+    {
+        if (!isDragging_)
+            return;
+
+        const auto &pile = controller_.getPile(dragGroup_, dragPileIndex_);
+        const auto &cards = pile.getCards();
+
+        if (cards.empty())
+            return;
+
+        int startIndex = dragCardIndex_;
+
+        if (dragGroup_ != core::PileGroup::Tableau)
+        {
+            startIndex = static_cast<int>(cards.size()) - 1;
+        }
+
+        int drawX = mouseX_ - dragOffsetX_;
+        int drawY = mouseY_ - dragOffsetY_;
+
+        for (size_t c = static_cast<size_t>(startIndex); c < cards.size(); c++)
+        {
+            SDL_Rect destRect = {drawX, drawY, RENDER_WIDTH, RENDER_HEIGHT};
+            SDL_Rect srcRect = getCardSpriteRect(cards[c]);
+            SDL_RenderCopy(renderer_, spriteSheet_, &srcRect, &destRect);
+
+            drawY += Y_OFFSET_FACEUP;
+        }
     }
 
     int SDLView::getCardY(const core::Pile &tableau, int cardIndex) const

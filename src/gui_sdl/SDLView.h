@@ -56,32 +56,30 @@ namespace sdl
             int cardIndex = -1;
         };
 
-        // --- Selection State ---
-        bool hasSelection_ = false;
-        core::PileGroup selGroup_;
-        int selPileIndex_ = 0;
-        int selCardIndex_ = -1;
+        // --- Drag and Drop State ---
+        bool isDragging_ = false;
+        core::PileGroup dragGroup_;
+        int dragPileIndex_ = 0;
+        int dragCardIndex_ = -1;
+
+        // Mouse tracking & grab offsets (prevents top-left corner snapping)
+        int mouseX_ = 0;
+        int mouseY_ = 0;
+        int dragOffsetX_ = 0;
+        int dragOffsetY_ = 0;
 
         // Helper methods
-
-        // Polls the SDL event queue for user input.
-        // Handles closing the window via the OS 'X' button and will eventually
-        // handle drag-and-drop mouse events for card movement.
         void processEvents();
-
-        // Clears the screen and draws the current game state.
-        // Iterates through the board's piles via the controller and renders
-        // the appropriate sprites from the texture atlas.
         void render();
 
-        // Calculate the exact 64x64 slice on the sprite sheet for a given card
-        SDL_Rect getCardSpriteRect(const core::Card &card) const;
+        void clearDrag();
+        void handleMouseDown(int x, int y);
+        void handleMouseUp(int x, int y);
+        void handleMouseMotion(int x, int y);
+        void renderDraggedCards();
 
-        // Translates an (X, Y) screen coordinate into a game entity selection
-        void handleMouseClick(int x, int y);
-        void clearSelection();
+        SDL_Rect getCardSpriteRect(const core::Card &card) const;
         ClickTarget getClickTarget(int x, int y) const;
-        void renderSelection();
         int getCardY(const core::Pile &tableau, int cardIndex) const;
     };
 } // namespace sdl

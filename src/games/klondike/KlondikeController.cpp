@@ -10,10 +10,10 @@
 #include <array>                          // for array
 #include <vector>                         // for vector
 #include "core/Card.h"                    // for Card
-#include "core/Deck.h"                    // for Deck
 #include "games/klondike/KlondikeRules.h" // for KlondikeRules
 #include "core/Pile.h"                    // for Pile
 #include <stdexcept>
+#include "core/IGameController.h"          // for GameMove, PileGroup
 
 namespace core
 {

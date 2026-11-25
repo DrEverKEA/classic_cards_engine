@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <cstddef>                        // for size_t
 #include "games/klondike/KlondikeBoard.h" // for KlondikeBoard
 #include "../../core/IGameController.h"
 
